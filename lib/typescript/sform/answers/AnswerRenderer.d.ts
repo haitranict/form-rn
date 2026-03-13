@@ -28,8 +28,9 @@ interface Props {
     onCaptureImageFromCamera?: (question: Question) => void;
     onRecordAudio?: (question: Question) => void;
     onPickAudioFromFiles?: (question: Question) => void;
+    filesBasePath?: string;
     onChange: (question: Question, value: unknown, answerItem?: AnswerItem) => void;
 }
-export declare function AnswerRenderer({ question, provinces, districts, towns, cameraImages, onCapture, onDeleteCameraImage, onDeleteUploadedImage, onUploadImages, onUploadAudio, onPickImageFromGallery, onCaptureImageFromCamera, onRecordAudio, onPickAudioFromFiles, onChange, }: Props): React.JSX.Element;
+export declare function AnswerRenderer({ question, provinces, districts, towns, cameraImages, onCapture, onDeleteCameraImage, onDeleteUploadedImage, onUploadImages, onUploadAudio, onPickImageFromGallery, onCaptureImageFromCamera, onRecordAudio, onPickAudioFromFiles, filesBasePath, onChange, }: Props): React.JSX.Element;
 export {};
 //# sourceMappingURL=AnswerRenderer.d.ts.map

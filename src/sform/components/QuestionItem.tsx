@@ -23,6 +23,7 @@ interface Props {
   onCaptureImageFromCamera?: (question: Question) => void;
   onRecordAudio?: (question: Question) => void;
   onPickAudioFromFiles?: (question: Question) => void;
+  filesBasePath?: string;
   onChange: (question: Question, value: unknown, answerItem?: AnswerItem) => void;
 }
 
@@ -55,6 +56,7 @@ export function QuestionItem({
   onCaptureImageFromCamera,
   onRecordAudio,
   onPickAudioFromFiles,
+  filesBasePath,
   onChange,
 }: Props) {
   // Ẩn nếu checkList bảo không hiển thị
@@ -95,6 +97,7 @@ export function QuestionItem({
           onCaptureImageFromCamera={onCaptureImageFromCamera}
           onRecordAudio={onRecordAudio}
           onPickAudioFromFiles={onPickAudioFromFiles}
+          filesBasePath={filesBasePath}
           onChange={onChange}
         />
       </View>

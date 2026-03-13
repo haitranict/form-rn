@@ -28,9 +28,11 @@ export interface SFormResultProps {
     onRecordAudio?: (questionId: number, callback: (audioUri: string) => void) => void;
     /** Audio: Pick audio file from document handler */
     onPickAudioFromFiles?: (questionId: number, callback: (audioUri: string) => void) => void;
+    /** Base path for files directory (e.g., from ReactNativeFS.DocumentDirectoryPath) */
+    filesBasePath?: string;
     /** Display mode: 'all' (hiện tất cả) hoặc 'step' (từng câu một) */
     displayMode?: 'all' | 'step';
     style?: ViewStyle;
 }
-export declare function SFormResult({ formId, apiConfig, formKey, shopId, onSubmitSuccess, onSubmitError, mode, dataInput, onCameraCapture, onPickImageFromGallery, onCaptureImageFromCamera, onRecordAudio, onPickAudioFromFiles, displayMode, style, }: SFormResultProps): React.JSX.Element;
+export declare function SFormResult({ formId, apiConfig, formKey, shopId, onSubmitSuccess, onSubmitError, mode, dataInput, onCameraCapture, onPickImageFromGallery, onCaptureImageFromCamera, onRecordAudio, onPickAudioFromFiles, filesBasePath, displayMode, style, }: SFormResultProps): React.JSX.Element;
 //# sourceMappingURL=SFormResult.d.ts.map

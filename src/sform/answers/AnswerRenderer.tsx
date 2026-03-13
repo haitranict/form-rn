@@ -32,6 +32,7 @@ interface Props {
   onCaptureImageFromCamera?: (question: Question) => void;
   onRecordAudio?: (question: Question) => void;
   onPickAudioFromFiles?: (question: Question) => void;
+  filesBasePath?: string;
   onChange: (question: Question, value: unknown, answerItem?: AnswerItem) => void;
 }
 
@@ -50,6 +51,7 @@ export function AnswerRenderer({
   onCaptureImageFromCamera,
   onRecordAudio,
   onPickAudioFromFiles,
+  filesBasePath,
   onChange,
 }: Props) {
   if (question.anwserItem.length === 0) {
@@ -110,6 +112,7 @@ export function AnswerRenderer({
           onUpload={onUploadImages}
           onPickFromGallery={onPickImageFromGallery}
           onCaptureFromCamera={onCaptureImageFromCamera}
+          filesBasePath={filesBasePath}
         />
       );
     case 8:
