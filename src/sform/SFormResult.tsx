@@ -315,24 +315,44 @@ export function SFormResult({
     (question: Question) => {
       if (onPickImageFromGallery) {
         onPickImageFromGallery(question.questionId, (imageUri: string) => {
-          // TODO: Cần implement logic để add image vào question answer
-          console.log('Image from gallery:', imageUri);
+          // Parse existing images
+          const raw = question.anwserItem[0].anwserValue;
+          let images: string[] = [];
+          try {
+            if (raw) images = JSON.parse(raw);
+          } catch { /* ignore */ }
+          
+          // Add new image
+          images.push(imageUri);
+          
+          // Save back to form
+          handleOnChange(question, JSON.stringify(images));
         });
       }
     },
-    [onPickImageFromGallery]
+    [onPickImageFromGallery, handleOnChange]
   );
 
   const handleCaptureImageFromCamera = useCallback(
     (question: Question) => {
       if (onCaptureImageFromCamera) {
         onCaptureImageFromCamera(question.questionId, (imageUri: string) => {
-          // TODO: Cần implement logic để add image vào question answer
-          console.log('Image from camera:', imageUri);
+          // Parse existing images
+          const raw = question.anwserItem[0].anwserValue;
+          let images: string[] = [];
+          try {
+            if (raw) images = JSON.parse(raw);
+          } catch { /* ignore */ }
+          
+          // Add new image
+          images.push(imageUri);
+          
+          // Save back to form
+          handleOnChange(question, JSON.stringify(images));
         });
       }
     },
-    [onCaptureImageFromCamera]
+    [onCaptureImageFromCamera, handleOnChange]
   );
 
   // ============================================================
@@ -342,24 +362,44 @@ export function SFormResult({
     (question: Question) => {
       if (onRecordAudio) {
         onRecordAudio(question.questionId, (audioUri: string) => {
-          // TODO: Cần implement logic để add audio vào question answer
-          console.log('Audio recorded:', audioUri);
+          // Parse existing audio files
+          const raw = question.anwserItem[0].anwserValue;
+          let audioUrls: string[] = [];
+          try {
+            if (raw) audioUrls = JSON.parse(raw);
+          } catch { /* ignore */ }
+          
+          // Add new audio file
+          audioUrls.push(audioUri);
+          
+          // Save back to form
+          handleOnChange(question, JSON.stringify(audioUrls));
         });
       }
     },
-    [onRecordAudio]
+    [onRecordAudio, handleOnChange]
   );
 
   const handlePickAudioFromFiles = useCallback(
     (question: Question) => {
       if (onPickAudioFromFiles) {
         onPickAudioFromFiles(question.questionId, (audioUri: string) => {
-          // TODO: Cần implement logic để add audio vào question answer
-          console.log('Audio from files:', audioUri);
+          // Parse existing audio files
+          const raw = question.anwserItem[0].anwserValue;
+          let audioUrls: string[] = [];
+          try {
+            if (raw) audioUrls = JSON.parse(raw);
+          } catch { /* ignore */ }
+          
+          // Add new audio file
+          audioUrls.push(audioUri);
+          
+          // Save back to form
+          handleOnChange(question, JSON.stringify(audioUrls));
         });
       }
     },
-    [onPickAudioFromFiles]
+    [onPickAudioFromFiles, handleOnChange]
   );
 
   // ============================================================
