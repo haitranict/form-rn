@@ -188,18 +188,25 @@ export interface SFormState {
 // ============================================================
 
 export interface FormListItem {
-  Id: number;                // formId
-  Title: string;             // Tên form
-  SubTitle?: string;         // Mô tả
-  AccessKey: string;         // formKey - dùng để fetch detail
-  FromDate?: number;         // YYYYMMDD
-  ToDate?: number;           // YYYYMMDD
-  MMobile?: number;
-  formData?: string;         // JSON string
-  InApp?: number;
-  WebUrl?: string;
-  publicUrl?: string;
-  Banner?: string;           // JSON string
+  id: number;                // formId
+  accountId: number;
+  status: string | null;
+  title: string;             // Tên form
+  subTitle: string | null;   // Mô tả
+  banner: string | null;     // URL ảnh banner (nếu có)
+  usedEmployees: boolean | null;
+  usedStores: boolean | null;
+  slogan: string | null;
+  fromDate: number | null;   // YYYYMMDD
+  toDate: number | null;     // YYYYMMDD
+  fromTime: string | null;
+  toTime: string | null;
+  formData: string;          // JSON string của questions
+  accessKey: string;         // formKey - dùng để fetch detail
+  publicUrl: string | null;
+  inApp: number;             // 0 = web only, 1 = in app
+  createBy: number | null;
+  createDate: string | null;
 }
 
 // Response wrapper

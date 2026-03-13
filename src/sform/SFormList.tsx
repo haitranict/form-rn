@@ -7,6 +7,7 @@ import {
   ActivityIndicator,
   StyleSheet,
   Alert,
+  Image,
   type ViewStyle,
 } from 'react-native';
 import moment from 'moment';
@@ -87,11 +88,11 @@ export function SFormList({
   };
 
   const handleSelectForm = (item: FormListItem) => {
-    onSelectForm(item.AccessKey, shopId, item);
+    onSelectForm(item.accessKey, shopId, item);
   };
 
   const renderFormItem = ({ item }: { item: FormListItem }) => {
-    const isExpired = item.ToDate ? item.ToDate < parseInt(moment().format('YYYYMMDD'), 10) : false;
+    const isExpired = item.toDate ? item.toDate < parseInt(moment().format('YYYYMMDD'), 10) : false;
     const isCompleted = false; // Mặc định chưa làm (theo yêu cầu)
 
     return (
@@ -104,47 +105,58 @@ export function SFormList({
         onPress={() => handleSelectForm(item)}
         activeOpacity={0.7}
       >
-        <View style={styles.formItemHeader}>
-          <Text style={styles.formName} numberOfLines={2}>
-            {item.Title}
-          </Text>
-          {isCompleted && (
-            <View style={styles.completedBadge}>
-              <Text style={styles.completedText}>✓ Đã làm</Text>
-            </View>
+        {/* Banner Image */}
+        {item.banner && (
+          <Image
+            source={{ uri: item.banner }}
+            style={styles.bannerImage}
+            resizeMode="cover"
+          />
+        )}
+        
+        <View style={styles.formItemContent}>
+          <View style={styles.formItemHeader}>
+            <Text style={styles.formName} numberOfLines={2}>
+              {item.title}
+            </Text>
+            {isCompleted && (
+              <View style={styles.completedBadge}>
+                <Text style={styles.completedText}>✓ Đã làm</Text>
+              </View>
+            )}
+            {!isCompleted && isExpired && (
+              <View style={styles.expiredBadge}>
+                <Text style={styles.expiredText}>Hết hạn</Text>
+              </View>
+            )}
+            {!isCompleted && !isExpired && (
+              <View style={styles.pendingBadge}>
+                <Text style={styles.pendingText}>Chưa làm</Text>
+              </View>
+            )}
+          </View>
+
+          {item.subTitle && (
+            <Text style={styles.description} numberOfLines={3}>
+              {item.subTitle}
+            </Text>
           )}
-          {!isCompleted && isExpired && (
-            <View style={styles.expiredBadge}>
-              <Text style={styles.expiredText}>Hết hạn</Text>
-            </View>
-          )}
-          {!isCompleted && !isExpired && (
-            <View style={styles.pendingBadge}>
-              <Text style={styles.pendingText}>Chưa làm</Text>
+
+          {(item.fromDate || item.toDate) && (
+            <View style={styles.dateRow}>
+              {item.fromDate && (
+                <Text style={styles.dateText}>
+                  Từ: {moment(item.fromDate.toString(), 'YYYYMMDD').format('DD/MM/YYYY')}
+                </Text>
+              )}
+              {item.toDate && (
+                <Text style={[styles.dateText, isExpired && styles.dateExpired]}>
+                  Đến: {moment(item.toDate.toString(), 'YYYYMMDD').format('DD/MM/YYYY')}
+                </Text>
+              )}
             </View>
           )}
         </View>
-
-        {item.SubTitle && (
-          <Text style={styles.description} numberOfLines={2}>
-            {item.SubTitle}
-          </Text>
-        )}
-
-        {(item.FromDate || item.ToDate) && (
-          <View style={styles.dateRow}>
-            {item.FromDate && (
-              <Text style={styles.dateText}>
-                Từ: {moment(item.FromDate.toString(), 'YYYYMMDD').format('DD/MM/YYYY')}
-              </Text>
-            )}
-            {item.ToDate && (
-              <Text style={[styles.dateText, isExpired && styles.dateExpired]}>
-                Đến: {moment(item.ToDate.toString(), 'YYYYMMDD').format('DD/MM/YYYY')}
-              </Text>
-            )}
-          </View>
-        )}
       </TouchableOpacity>
     );
   };
@@ -186,7 +198,7 @@ export function SFormList({
       <FlatList
         data={forms}
         renderItem={renderFormItem}
-        keyExtractor={(item) => `${item.Id}-${item.AccessKey}`}
+        keyExtractor={(item) => `${item.id}-${item.accessKey}`}
         contentContainerStyle={styles.listContent}
         ItemSeparatorComponent={() => <View style={styles.separator} />}
       />
@@ -246,7 +258,7 @@ const styles = StyleSheet.create({
   formItem: {
     backgroundColor: '#fff',
     borderRadius: 12,
-    padding: 16,
+    overflow: 'hidden',
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.08,
@@ -262,6 +274,14 @@ const styles = StyleSheet.create({
   formItemExpired: {
     borderLeftColor: '#EA4335',
     opacity: 0.7,
+  },
+  bannerImage: {
+    width: '100%',
+    height: 160,
+    backgroundColor: '#E8EAED',
+  },
+  formItemContent: {
+    padding: 16,
   },
   formItemHeader: {
     flexDirection: 'row',

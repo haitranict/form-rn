@@ -126,18 +126,25 @@ export interface SFormState {
     isSubmitting: boolean;
 }
 export interface FormListItem {
-    Id: number;
-    Title: string;
-    SubTitle?: string;
-    AccessKey: string;
-    FromDate?: number;
-    ToDate?: number;
-    MMobile?: number;
-    formData?: string;
-    InApp?: number;
-    WebUrl?: string;
-    publicUrl?: string;
-    Banner?: string;
+    id: number;
+    accountId: number;
+    status: string | null;
+    title: string;
+    subTitle: string | null;
+    banner: string | null;
+    usedEmployees: boolean | null;
+    usedStores: boolean | null;
+    slogan: string | null;
+    fromDate: number | null;
+    toDate: number | null;
+    fromTime: string | null;
+    toTime: string | null;
+    formData: string;
+    accessKey: string;
+    publicUrl: string | null;
+    inApp: number;
+    createBy: number | null;
+    createDate: string | null;
 }
 export interface FormListResponse {
     statusId: number;
