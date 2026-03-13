@@ -77,18 +77,32 @@ async function handleApiResponse<T>(
 }
 
 /**
- * GetById - Lấy form theo domain/id
- * GET /api/SForm/GetById?id={formId}
+ * GetById - Lấy form theo FormKey
+ * GET /shop/formbyKey
+ * Headers: FormKey (string), shopId (int)
  */
 export async function apiGetFormById(
   config: SFormApiConfig,
-  formId: string
+  formKey: string,
+  shopId: number = 0
 ): Promise<SFormData> {
-  const url = `${config.baseUrl}/api/SForm/GetById?${formId}`;
-  console.log('apiGetFormById - URL:', url);
+  const headers = buildHeaders(config);
+  // Pass FormKey và shopId qua headers theo yêu cầu API
+  headers['FormKey'] = formKey;
+  headers['shopId'] = shopId.toString();
   
-  const res = await fetch(url, { headers: buildHeaders(config) });
-  return handleApiResponse<SFormData>(res, 'GetById');
+  const url = `${config.baseUrl}/shop/formbyKey`;
+  
+  console.log('=== apiGetFormById Request ===');
+  console.log('URL:', url);
+  console.log('FormKey:', formKey);
+  console.log('shopId:', shopId);
+  
+  const res = await fetch(url, { 
+    method: 'GET',
+    headers 
+  });
+  return handleApiResponse<SFormData>(res, 'GetFormById');
 }
 
 /**

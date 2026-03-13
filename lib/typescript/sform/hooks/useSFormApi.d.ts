@@ -4,10 +4,11 @@ export interface SFormApiConfig {
     token?: string;
 }
 /**
- * GetById - Lấy form theo domain/id
- * GET /api/SForm/GetById?id={formId}
+ * GetById - Lấy form theo FormKey
+ * GET /shop/formbyKey
+ * Headers: FormKey (string), shopId (int)
  */
-export declare function apiGetFormById(config: SFormApiConfig, formId: string): Promise<SFormData>;
+export declare function apiGetFormById(config: SFormApiConfig, formKey: string, shopId?: number): Promise<SFormData>;
 /**
  * GetShops - Lấy danh sách cửa hàng theo accountId + employeeId
  * POST /api/SForm/GetShops

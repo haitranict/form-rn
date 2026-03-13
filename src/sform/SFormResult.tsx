@@ -151,7 +151,7 @@ export function SFormResult({
     }
 
     // Fill mode: load từ API
-    apiGetFormById(apiConfig, queryKey)
+    apiGetFormById(apiConfig, queryKey, shopId || 0)
       .then((result) => {
         console.log('SFormResult - GetById result:', result);
         
