@@ -19,6 +19,10 @@ interface Props {
   onDeleteUploadedImage: (questionId: number, url: string) => void;
   onUploadImages: (files: Array<{ uri: string; name: string; type: string }>, q: Question) => void;
   onUploadAudio: (files: Array<{ uri: string; name: string; type: string }>, q: Question) => void;
+  onPickImageFromGallery?: (question: Question) => void;
+  onCaptureImageFromCamera?: (question: Question) => void;
+  onRecordAudio?: (question: Question) => void;
+  onPickAudioFromFiles?: (question: Question) => void;
   onChange: (question: Question, value: unknown, answerItem?: AnswerItem) => void;
 }
 
@@ -47,6 +51,10 @@ export function QuestionItem({
   onDeleteUploadedImage,
   onUploadImages,
   onUploadAudio,
+  onPickImageFromGallery,
+  onCaptureImageFromCamera,
+  onRecordAudio,
+  onPickAudioFromFiles,
   onChange,
 }: Props) {
   // Ẩn nếu checkList bảo không hiển thị
@@ -83,6 +91,10 @@ export function QuestionItem({
           onDeleteUploadedImage={onDeleteUploadedImage}
           onUploadImages={onUploadImages}
           onUploadAudio={onUploadAudio}
+          onPickImageFromGallery={onPickImageFromGallery}
+          onCaptureImageFromCamera={onCaptureImageFromCamera}
+          onRecordAudio={onRecordAudio}
+          onPickAudioFromFiles={onPickAudioFromFiles}
           onChange={onChange}
         />
       </View>

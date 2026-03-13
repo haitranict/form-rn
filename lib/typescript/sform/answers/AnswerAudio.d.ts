@@ -8,7 +8,9 @@ interface Props {
         name: string;
         type: string;
     }>, question: Question) => void;
+    onRecord?: (question: Question) => void;
+    onPickFromFiles?: (question: Question) => void;
 }
-export declare function AnswerAudio({ question, onChange, onUpload }: Props): React.JSX.Element;
+export declare function AnswerAudio({ question, onChange, onUpload, onRecord, onPickFromFiles }: Props): React.JSX.Element;
 export {};
 //# sourceMappingURL=AnswerAudio.d.ts.map

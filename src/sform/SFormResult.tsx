@@ -62,6 +62,14 @@ export interface SFormResultProps {
   dataInput?: import('./types/sform.types').SFormData;
   /** Custom camera handler - inject từ parent app nếu đã có camera */
   onCameraCapture?: (questionId: number, callback: (imageUri: string) => void) => void;
+  /** Image: Pick from gallery handler */
+  onPickImageFromGallery?: (questionId: number, callback: (imageUri: string) => void) => void;
+  /** Image: Capture from camera handler */
+  onCaptureImageFromCamera?: (questionId: number, callback: (imageUri: string) => void) => void;
+  /** Audio: Record audio handler */
+  onRecordAudio?: (questionId: number, callback: (audioUri: string) => void) => void;
+  /** Audio: Pick audio file from document handler */
+  onPickAudioFromFiles?: (questionId: number, callback: (audioUri: string) => void) => void;
   /** Display mode: 'all' (hiện tất cả) hoặc 'step' (từng câu một) */
   displayMode?: 'all' | 'step';
   style?: ViewStyle;
@@ -81,6 +89,10 @@ export function SFormResult({
   mode = 'fill',
   dataInput,
   onCameraCapture,
+  onPickImageFromGallery,
+  onCaptureImageFromCamera,
+  onRecordAudio,
+  onPickAudioFromFiles,
   displayMode = 'all',
   style,
 }: SFormResultProps) {
@@ -294,6 +306,60 @@ export function SFormResult({
       }
     },
     [addCameraImage, onCameraCapture]
+  );
+
+  // ============================================================
+  // Image Handlers - Gallery & Camera
+  // ============================================================
+  const handlePickImageFromGallery = useCallback(
+    (question: Question) => {
+      if (onPickImageFromGallery) {
+        onPickImageFromGallery(question.questionId, (imageUri: string) => {
+          // TODO: Cần implement logic để add image vào question answer
+          console.log('Image from gallery:', imageUri);
+        });
+      }
+    },
+    [onPickImageFromGallery]
+  );
+
+  const handleCaptureImageFromCamera = useCallback(
+    (question: Question) => {
+      if (onCaptureImageFromCamera) {
+        onCaptureImageFromCamera(question.questionId, (imageUri: string) => {
+          // TODO: Cần implement logic để add image vào question answer
+          console.log('Image from camera:', imageUri);
+        });
+      }
+    },
+    [onCaptureImageFromCamera]
+  );
+
+  // ============================================================
+  // Audio Handlers - Record & File Picker
+  // ============================================================
+  const handleRecordAudio = useCallback(
+    (question: Question) => {
+      if (onRecordAudio) {
+        onRecordAudio(question.questionId, (audioUri: string) => {
+          // TODO: Cần implement logic để add audio vào question answer
+          console.log('Audio recorded:', audioUri);
+        });
+      }
+    },
+    [onRecordAudio]
+  );
+
+  const handlePickAudioFromFiles = useCallback(
+    (question: Question) => {
+      if (onPickAudioFromFiles) {
+        onPickAudioFromFiles(question.questionId, (audioUri: string) => {
+          // TODO: Cần implement logic để add audio vào question answer
+          console.log('Audio from files:', audioUri);
+        });
+      }
+    },
+    [onPickAudioFromFiles]
   );
 
   // ============================================================
@@ -589,6 +655,10 @@ export function SFormResult({
               onDeleteUploadedImage={deleteUploadedImage}
               onUploadImages={handleUploadImages}
               onUploadAudio={handleUploadAudio}
+              onPickImageFromGallery={handlePickImageFromGallery}
+              onCaptureImageFromCamera={handleCaptureImageFromCamera}
+              onRecordAudio={handleRecordAudio}
+              onPickAudioFromFiles={handlePickAudioFromFiles}
               onChange={(q, v, ans) => handleOnChange(q, v, ans as AnswerItem | undefined)}
             />
           );

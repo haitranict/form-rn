@@ -28,6 +28,10 @@ interface Props {
   onDeleteUploadedImage: (questionId: number, url: string) => void;
   onUploadImages: (files: Array<{ uri: string; name: string; type: string }>, question: Question) => void;
   onUploadAudio: (files: Array<{ uri: string; name: string; type: string }>, question: Question) => void;
+  onPickImageFromGallery?: (question: Question) => void;
+  onCaptureImageFromCamera?: (question: Question) => void;
+  onRecordAudio?: (question: Question) => void;
+  onPickAudioFromFiles?: (question: Question) => void;
   onChange: (question: Question, value: unknown, answerItem?: AnswerItem) => void;
 }
 
@@ -42,6 +46,10 @@ export function AnswerRenderer({
   onDeleteUploadedImage,
   onUploadImages,
   onUploadAudio,
+  onPickImageFromGallery,
+  onCaptureImageFromCamera,
+  onRecordAudio,
+  onPickAudioFromFiles,
   onChange,
 }: Props) {
   if (question.anwserItem.length === 0) {
@@ -100,6 +108,8 @@ export function AnswerRenderer({
           onChange={(q, v) => onChange(q, v)}
           onDelete={(qId, url) => onDeleteUploadedImage(qId, url)}
           onUpload={onUploadImages}
+          onPickFromGallery={onPickImageFromGallery}
+          onCaptureFromCamera={onCaptureImageFromCamera}
         />
       );
     case 8:
@@ -117,6 +127,8 @@ export function AnswerRenderer({
           question={question}
           onChange={(q, v) => onChange(q, v)}
           onUpload={onUploadAudio}
+          onRecord={onRecordAudio}
+          onPickFromFiles={onPickAudioFromFiles}
         />
       );
     case 10:

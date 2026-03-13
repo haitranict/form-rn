@@ -9,7 +9,9 @@ interface Props {
         name: string;
         type: string;
     }>, question: Question) => void;
+    onPickFromGallery?: (question: Question) => void;
+    onCaptureFromCamera?: (question: Question) => void;
 }
-export declare function AnswerImage({ question, onChange, onDelete, onUpload }: Props): React.JSX.Element;
+export declare function AnswerImage({ question, onChange, onDelete, onUpload, onPickFromGallery, onCaptureFromCamera }: Props): React.JSX.Element;
 export {};
 //# sourceMappingURL=AnswerImage.d.ts.map

@@ -24,8 +24,12 @@ interface Props {
         name: string;
         type: string;
     }>, question: Question) => void;
+    onPickImageFromGallery?: (question: Question) => void;
+    onCaptureImageFromCamera?: (question: Question) => void;
+    onRecordAudio?: (question: Question) => void;
+    onPickAudioFromFiles?: (question: Question) => void;
     onChange: (question: Question, value: unknown, answerItem?: AnswerItem) => void;
 }
-export declare function AnswerRenderer({ question, provinces, districts, towns, cameraImages, onCapture, onDeleteCameraImage, onDeleteUploadedImage, onUploadImages, onUploadAudio, onChange, }: Props): React.JSX.Element;
+export declare function AnswerRenderer({ question, provinces, districts, towns, cameraImages, onCapture, onDeleteCameraImage, onDeleteUploadedImage, onUploadImages, onUploadAudio, onPickImageFromGallery, onCaptureImageFromCamera, onRecordAudio, onPickAudioFromFiles, onChange, }: Props): React.JSX.Element;
 export {};
 //# sourceMappingURL=AnswerRenderer.d.ts.map

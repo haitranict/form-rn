@@ -12,20 +12,31 @@ interface Props {
     files: Array<{ uri: string; name: string; type: string }>,
     question: Question
   ) => void;
+  onPickFromGallery?: (question: Question) => void;
+  onCaptureFromCamera?: (question: Question) => void;
 }
 
-export function AnswerImage({ question, onChange, onDelete, onUpload }: Props) {
+export function AnswerImage({ question, onChange, onDelete, onUpload, onPickFromGallery, onCaptureFromCamera }: Props) {
   const raw = question.anwserItem[0].anwserValue;
   let images: string[] = [];
   try {
     if (raw) images = JSON.parse(raw);
   } catch { /* ignore */ }
 
-  const handlePick = async () => {
-    // NOTE: Cần cài react-native-image-picker
-    // import { launchImageLibrary } from 'react-native-image-picker';
-    // Placeholder - thay bằng thực tế
-    Alert.alert('Image Picker', 'Tích hợp react-native-image-picker ở đây');
+  const handlePickFromGallery = () => {
+    if (onPickFromGallery) {
+      onPickFromGallery(question);
+    } else {
+      Alert.alert('Image Picker', 'Vui lòng truyền callback onPickFromGallery để chọn ảnh từ gallery');
+    }
+  };
+
+  const handleCaptureFromCamera = () => {
+    if (onCaptureFromCamera) {
+      onCaptureFromCamera(question);
+    } else {
+      Alert.alert('Camera', 'Vui lòng truyền callback onCaptureFromCamera để chụp ảnh');
+    }
   };
 
   const handleClear = () => {
@@ -48,9 +59,13 @@ export function AnswerImage({ question, onChange, onDelete, onUpload }: Props) {
         ))}
       </ScrollView>
       <View style={styles.actions}>
-        <TouchableOpacity style={styles.btn} onPress={handlePick}>
+        <TouchableOpacity style={styles.btn} onPress={handlePickFromGallery}>
           <Text style={styles.btnIcon}>🖼</Text>
-          <Text style={styles.btnText}>Chọn ảnh</Text>
+          <Text style={styles.btnText}>Thư viện</Text>
+        </TouchableOpacity>
+        <TouchableOpacity style={styles.btn} onPress={handleCaptureFromCamera}>
+          <Text style={styles.btnIcon}>📷</Text>
+          <Text style={styles.btnText}>Chụp ảnh</Text>
         </TouchableOpacity>
         {images.length > 0 && (
           <TouchableOpacity style={[styles.btn, styles.clearBtn]} onPress={handleClear}>

@@ -9,19 +9,31 @@ interface Props {
     files: Array<{ uri: string; name: string; type: string }>,
     question: Question
   ) => void;
+  onRecord?: (question: Question) => void;
+  onPickFromFiles?: (question: Question) => void;
 }
 
-export function AnswerAudio({ question, onChange, onUpload }: Props) {
+export function AnswerAudio({ question, onChange, onUpload, onRecord, onPickFromFiles }: Props) {
   const raw = question.anwserItem[0].anwserValue;
   let audioUrls: string[] = [];
   try {
     if (raw) audioUrls = JSON.parse(raw);
   } catch { /* ignore */ }
 
-  const handlePick = () => {
-    // NOTE: Cần react-native-document-picker
-    // import DocumentPicker from 'react-native-document-picker';
-    Alert.alert('Audio Picker', 'Tích hợp react-native-document-picker ở đây');
+  const handleRecord = () => {
+    if (onRecord) {
+      onRecord(question);
+    } else {
+      Alert.alert('Ghi âm', 'Vui lòng truyền callback onRecord để ghi âm');
+    }
+  };
+
+  const handlePickFromFiles = () => {
+    if (onPickFromFiles) {
+      onPickFromFiles(question);
+    } else {
+      Alert.alert('Chọn file', 'Vui lòng truyền callback onPickFromFiles để chọn file audio');
+    }
   };
 
   return (
@@ -33,9 +45,13 @@ export function AnswerAudio({ question, onChange, onUpload }: Props) {
         </View>
       ))}
       <View style={styles.actions}>
-        <TouchableOpacity style={styles.btn} onPress={handlePick}>
+        <TouchableOpacity style={styles.btn} onPress={handleRecord}>
           <Text style={styles.btnIcon}>🎤</Text>
-          <Text style={styles.btnText}>Chọn âm thanh</Text>
+          <Text style={styles.btnText}>Ghi âm</Text>
+        </TouchableOpacity>
+        <TouchableOpacity style={styles.btn} onPress={handlePickFromFiles}>
+          <Text style={styles.btnIcon}>📁</Text>
+          <Text style={styles.btnText}>Chọn file</Text>
         </TouchableOpacity>
         {audioUrls.length > 0 && (
           <TouchableOpacity
