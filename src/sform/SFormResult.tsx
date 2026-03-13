@@ -334,68 +334,48 @@ export function SFormResult({
   ]);
 
   // ============================================================
-  // Render states
+  // Parse questions + filter visible (must be before early returns to satisfy hooks rules)
   // ============================================================
-  if (state.loading) {
-    return (
-      <View style={styles.center}>
-        <ActivityIndicator size="large" color="#4285F4" />
-        <Text style={styles.loadingText}>Đang tải form...</Text>
-      </View>
-    );
-  }
+  const { visibleQuestions, questionsToDisplay, isStepMode, totalSteps, isFirstStep, isLastStep } = React.useMemo(() => {
+    let questions: Question[] = [];
+    try { 
+      if (state.formData?.formData) {
+        questions = JSON.parse(state.formData.formData); 
+      }
+    } catch { /* ignore */ }
 
-  if (state.expired) {
-    return <FormExpired />;
-  }
-
-  if (state.sended) {
-    return <FormSuccess />;
-  }
-
-  if (!state.formData) {
-    return (
-      <View style={styles.center}>
-        <Text style={styles.emptyText}>Không tìm thấy form.</Text>
-      </View>
-    );
-  }
-
-  // ============================================================
-  // Parse questions + filter visible
-  // ============================================================
-  let questions: Question[] = [];
-  try { questions = JSON.parse(state.formData.formData); } catch { /* ignore */ }
-
-  // Tìm questionEnd (câu isEnd đầu tiên đang hiện)
-  let questionEndId = 9999;
-  for (const cl of state.checkList) {
-    if (cl.isEnd && cl.isShow) {
-      questionEndId = cl.questionId;
-      break;
+    // Tìm questionEnd (câu isEnd đầu tiên đang hiện)
+    let questionEndId = 9999;
+    for (const cl of state.checkList) {
+      if (cl.isEnd && cl.isShow) {
+        questionEndId = cl.questionId;
+        break;
+      }
     }
-  }
 
-  const visibleQuestions = questions.filter((q) => {
-    const cl = state.checkList.find((c) => c.questionId === q.questionId);
-    if (!cl?.isShow) return false;
-    if (q.questionId > questionEndId) return false;
-    if (q.anwserItem.length === 0) return false;
-    return true;
-  });
+    const visible = questions.filter((q) => {
+      const cl = state.checkList.find((c) => c.questionId === q.questionId);
+      if (!cl?.isShow) return false;
+      if (q.questionId > questionEndId) return false;
+      if (q.anwserItem.length === 0) return false;
+      return true;
+    });
 
-  // ============================================================
-  // Step mode logic
-  // ============================================================
-  const questionsToDisplay =
-    displayMode === 'step'
-      ? [visibleQuestions[currentStep]].filter(Boolean)
-      : visibleQuestions;
+    const isStep = displayMode === 'step';
+    const display = isStep ? [visible[currentStep]].filter(Boolean) : visible;
+    const total = visible.length;
+    const isFirst = currentStep === 0;
+    const isLast = currentStep === total - 1;
 
-  const isStepMode = displayMode === 'step';
-  const totalSteps = visibleQuestions.length;
-  const isFirstStep = currentStep === 0;
-  const isLastStep = currentStep === totalSteps - 1;
+    return {
+      visibleQuestions: visible,
+      questionsToDisplay: display,
+      isStepMode: isStep,
+      totalSteps: total,
+      isFirstStep: isFirst,
+      isLastStep: isLast,
+    };
+  }, [state.formData, state.checkList, displayMode, currentStep]);
 
   // Validate current question before allowing next
   const canGoNext = React.useMemo(() => {
@@ -458,6 +438,34 @@ export function SFormResult({
       setCurrentStep((prev) => Math.max(prev - 1, 0));
     }
   }, [isFirstStep]);
+
+  // ============================================================
+  // Render states (after all hooks)
+  // ============================================================
+  if (state.loading) {
+    return (
+      <View style={styles.center}>
+        <ActivityIndicator size="large" color="#4285F4" />
+        <Text style={styles.loadingText}>Đang tải form...</Text>
+      </View>
+    );
+  }
+
+  if (state.expired) {
+    return <FormExpired />;
+  }
+
+  if (state.sended) {
+    return <FormSuccess />;
+  }
+
+  if (!state.formData) {
+    return (
+      <View style={styles.center}>
+        <Text style={styles.emptyText}>Không tìm thấy form.</Text>
+      </View>
+    );
+  }
 
   // ============================================================
   // Render Form
