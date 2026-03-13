@@ -1,0 +1,1 @@
+{"version":3,"file":"SectionHeader.d.ts","sourceRoot":"","sources":["../../../../src/components/layout/SectionHeader.tsx"],"names":[],"mappings":"AAAA,OAAO,KAAK,MAAM,OAAO,CAAC;AAG1B,OAAO,KAAK,EAAE,mBAAmB,EAAE,MAAM,yBAAyB,CAAC;AAEnE,UAAU,kBAAkB;IAC1B,MAAM,EAAE,mBAAmB,CAAC;CAC7B;AAED,wBAAgB,aAAa,CAAC,EAAE,MAAM,EAAE,EAAE,kBAAkB,qBAqC3D"}

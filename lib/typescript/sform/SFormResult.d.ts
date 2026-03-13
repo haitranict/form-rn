@@ -1,0 +1,28 @@
+import React from 'react';
+import { type ViewStyle } from 'react-native';
+import { type SFormApiConfig } from './hooks/useSFormApi';
+export interface SFormResultProps {
+    /** String sau dấu ? trên URL, ví dụ "abc123" hoặc "formId=123&..." */
+    formId: string;
+    /** Cấu hình API */
+    apiConfig: SFormApiConfig;
+    /** FormKey từ list (ưu tiên dùng thay vì formId) */
+    formKey?: string;
+    /** ShopId từ list */
+    shopId?: number;
+    /** Callback sau khi submit thành công */
+    onSubmitSuccess?: (resultId: number) => void;
+    /** Callback khi submit thất bại */
+    onSubmitError?: (message: string) => void;
+    /** View mode - chỉ xem, không submit */
+    mode?: 'fill' | 'view';
+    /** Dữ liệu trực tiếp (khi mode='view') */
+    dataInput?: import('./types/sform.types').SFormData;
+    /** Custom camera handler - inject từ parent app nếu đã có camera */
+    onCameraCapture?: (questionId: number, callback: (imageUri: string) => void) => void;
+    /** Display mode: 'all' (hiện tất cả) hoặc 'step' (từng câu một) */
+    displayMode?: 'all' | 'step';
+    style?: ViewStyle;
+}
+export declare function SFormResult({ formId, apiConfig, formKey, shopId, onSubmitSuccess, onSubmitError, mode, dataInput, onCameraCapture, displayMode, style, }: SFormResultProps): React.JSX.Element;
+//# sourceMappingURL=SFormResult.d.ts.map
