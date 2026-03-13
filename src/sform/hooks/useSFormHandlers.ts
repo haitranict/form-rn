@@ -155,7 +155,7 @@ export function useSFormHandlers({
               // Đang nhập "Khác"
               const idx = q.anwserItem.findIndex((a) => a.id === answerItem.id);
               if (idx !== -1) {
-                q.anwserItem[idx] = { ...q.anwserItem[idx], ortherValue: String(value ?? '') };
+                q.anwserItem[idx] = { ...q.anwserItem[idx], ortherValue: answerItem.ortherValue || '' };
               }
             } else {
               // Toggle checkbox
@@ -189,7 +189,7 @@ export function useSFormHandlers({
               // Đang nhập "Khác"
               const idx = q.anwserItem.findIndex((a) => a.id === answerItem.id);
               if (idx !== -1) {
-                q.anwserItem[idx] = { ...q.anwserItem[idx], ortherValue: String(value ?? '') };
+                q.anwserItem[idx] = { ...q.anwserItem[idx], ortherValue: answerItem.ortherValue || '' };
               }
             } else {
               // Chọn radio
