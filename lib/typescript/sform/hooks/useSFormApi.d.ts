@@ -42,6 +42,7 @@ export declare function apiUploadAudio(config: SFormApiConfig, files: Array<{
 /**
  * GetList - Lấy danh sách form khảo sát theo shopId
  * GET /shop/formlist
+ * Returns: { statusId, messager, data: FormListItem[], totalRow }
  */
 export declare function apiGetFormList(config: SFormApiConfig, shopId: number): Promise<import('../types/sform.types').FormListResponse>;
 //# sourceMappingURL=useSFormApi.d.ts.map

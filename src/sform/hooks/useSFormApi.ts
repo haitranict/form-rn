@@ -16,6 +16,14 @@ export interface SFormApiConfig {
   token?: string;        // Bearer token (nếu cần)
 }
 
+// Standard API response wrapper
+interface ApiResponse<T> {
+  statusId: number;
+  messager: string;
+  data: T;
+  totalRow?: number;
+}
+
 function buildHeaders(config: SFormApiConfig): Record<string, string> {
   const headers: Record<string, string> = {
     'Content-Type': 'application/json',
@@ -29,6 +37,46 @@ function buildHeaders(config: SFormApiConfig): Record<string, string> {
 }
 
 /**
+ * Helper: Check cả HTTP status và business status trong response
+ * @throws Error nếu có vấn đề ở bất kỳ layer nào
+ */
+async function handleApiResponse<T>(
+  res: Response,
+  apiName: string
+): Promise<T> {
+  // Layer 1: Check HTTP status
+  if (!res.ok) {
+    let errorMessage = `${apiName} failed: HTTP ${res.status}`;
+    try {
+      const errorBody = await res.text();
+      console.log(`${apiName} - Error body:`, errorBody);
+      errorMessage += ` - ${errorBody}`;
+    } catch (e) {
+      // Ignore if can't read body
+    }
+    throw new Error(errorMessage);
+  }
+
+  // Layer 2: Parse response body
+  const body = await res.json();
+  console.log(`${apiName} - Response body:`, body);
+
+  // Check if response has statusId field (wrapped response)
+  if (typeof body.statusId !== 'undefined') {
+    const wrapped = body as ApiResponse<T>;
+    if (wrapped.statusId !== 200) {
+      throw new Error(
+        `${apiName} failed: statusId ${wrapped.statusId} - ${wrapped.messager || 'Unknown error'}`
+      );
+    }
+    return wrapped.data;
+  }
+
+  // Direct response (no wrapper)
+  return body as T;
+}
+
+/**
  * GetById - Lấy form theo domain/id
  * GET /api/SForm/GetById?id={formId}
  */
@@ -36,12 +84,11 @@ export async function apiGetFormById(
   config: SFormApiConfig,
   formId: string
 ): Promise<SFormData> {
-  const res = await fetch(
-    `${config.baseUrl}/api/SForm/GetById?${formId}`,
-    { headers: buildHeaders(config) }
-  );
-  if (!res.ok) throw new Error(`GetById failed: ${res.status}`);
-  return res.json() as Promise<SFormData>;
+  const url = `${config.baseUrl}/api/SForm/GetById?${formId}`;
+  console.log('apiGetFormById - URL:', url);
+  
+  const res = await fetch(url, { headers: buildHeaders(config) });
+  return handleApiResponse<SFormData>(res, 'GetById');
 }
 
 /**
@@ -52,13 +99,15 @@ export async function apiGetShops(
   config: SFormApiConfig,
   data: { accountId: number; employeeId: number }
 ): Promise<Shop[]> {
-  const res = await fetch(`${config.baseUrl}/api/SForm/GetShops`, {
+  const url = `${config.baseUrl}/api/SForm/GetShops`;
+  console.log('apiGetShops - URL:', url, 'data:', data);
+  
+  const res = await fetch(url, {
     method: 'POST',
     headers: buildHeaders(config),
     body: JSON.stringify(data),
   });
-  if (!res.ok) throw new Error(`GetShops failed: ${res.status}`);
-  return res.json() as Promise<Shop[]>;
+  return handleApiResponse<Shop[]>(res, 'GetShops');
 }
 
 /**
@@ -69,13 +118,15 @@ export async function apiInsertResult(
   config: SFormApiConfig,
   payload: InsertResultPayload
 ): Promise<InsertResultResponse> {
-  const res = await fetch(`${config.baseUrl}/api/SForm/InsertResult`, {
+  const url = `${config.baseUrl}/api/SForm/InsertResult`;
+  console.log('apiInsertResult - URL:', url);
+  
+  const res = await fetch(url, {
     method: 'POST',
     headers: buildHeaders(config),
     body: JSON.stringify(payload),
   });
-  if (!res.ok) throw new Error(`InsertResult failed: ${res.status}`);
-  return res.json() as Promise<InsertResultResponse>;
+  return handleApiResponse<InsertResultResponse>(res, 'InsertResult');
 }
 
 /**
@@ -97,13 +148,16 @@ export async function apiUploadImages(
       ? config.token
       : `Bearer ${config.token}`;
   }
-  const res = await fetch(`${config.baseUrl}/api/SForm/UploadImages`, {
+  
+  const url = `${config.baseUrl}/api/SForm/UploadImages`;
+  console.log('apiUploadImages - URL:', url, 'files:', files.length);
+  
+  const res = await fetch(url, {
     method: 'POST',
     headers,
     body: formData,
   });
-  if (!res.ok) throw new Error(`UploadImages failed: ${res.status}`);
-  return res.json() as Promise<UploadResult[]>;
+  return handleApiResponse<UploadResult[]>(res, 'UploadImages');
 }
 
 /**
@@ -124,18 +178,22 @@ export async function apiUploadAudio(
       ? config.token
       : `Bearer ${config.token}`;
   }
-  const res = await fetch(`${config.baseUrl}/api/SForm/UploadAudio`, {
+  
+  const url = `${config.baseUrl}/api/SForm/UploadAudio`;
+  console.log('apiUploadAudio - URL:', url, 'files:', files.length);
+  
+  const res = await fetch(url, {
     method: 'POST',
     headers,
     body: formData,
   });
-  if (!res.ok) throw new Error(`UploadAudio failed: ${res.status}`);
-  return res.json() as Promise<UploadResult[]>;
+  return handleApiResponse<UploadResult[]>(res, 'UploadAudio');
 }
 
 /**
  * GetList - Lấy danh sách form khảo sát theo shopId
  * GET /shop/formlist
+ * Returns: { statusId, messager, data: FormListItem[], totalRow }
  */
 export async function apiGetFormList(
   config: SFormApiConfig,
@@ -148,26 +206,25 @@ export async function apiGetFormList(
   const url = `${config.baseUrl}/shop/formlist`;
   
   // Log request details
-  console.log('=== API Request ===');
+  console.log('=== apiGetFormList Request ===');
   console.log('URL:', url);
-  console.log('Method: GET');
+  console.log('shopId:', shopId, 'type:', typeof shopId);
   console.log('Headers:', {
     ...headers,
     Authorization: headers.Authorization ? `${headers.Authorization.substring(0, 20)}...` : 'none'
   });
-  console.log('shopId:', shopId, 'type:', typeof shopId);
   
   const res = await fetch(url, {
     method: 'GET',
     headers,
   });
   
-  console.log('=== API Response ===');
+  // Layer 1: Check HTTP status
+  console.log('=== HTTP Response ===');
   console.log('Status:', res.status, res.statusText);
   
   if (!res.ok) {
-    // Try to get error details from response body
-    let errorMessage = `GetList failed: ${res.status}`;
+    let errorMessage = `GetFormList failed: HTTP ${res.status}`;
     try {
       const errorBody = await res.text();
       console.log('Error body:', errorBody);
@@ -178,7 +235,20 @@ export async function apiGetFormList(
     throw new Error(errorMessage);
   }
   
-  const data = await res.json();
-  console.log('Response data:', data);
-  return data as Promise<import('../types/sform.types').FormListResponse>;
+  // Layer 2: Parse and validate business response
+  const body = await res.json();
+  console.log('=== Response Body ===');
+  console.log('statusId:', body.statusId);
+  console.log('messager:', body.messager);
+  console.log('data count:', body.data?.length || 0);
+  console.log('totalRow:', body.totalRow);
+  
+  // Validate business status
+  if (body.statusId !== 200) {
+    throw new Error(
+      `GetFormList failed: statusId ${body.statusId} - ${body.messager || 'Unknown error'}`
+    );
+  }
+  
+  return body as import('../types/sform.types').FormListResponse;
 }

@@ -153,8 +153,11 @@ export function SFormResult({
     // Fill mode: load từ API
     apiGetFormById(apiConfig, queryKey)
       .then((result) => {
+        console.log('SFormResult - GetById result:', result);
+        
+        // Check if API returned error data (id=0 means error)
         if (result.id === 0) {
-          showError(result.title);
+          showError(result.title || 'Không thể tải form');
           setLoading(false);
           return;
         }
@@ -186,7 +189,9 @@ export function SFormResult({
         }
       })
       .catch((err) => {
-        showError('Không thể tải form. Vui lòng thử lại.');
+        console.error('SFormResult - Load form error:', err);
+        const errorMsg = err?.message || 'Không thể tải form. Vui lòng thử lại.';
+        showError(errorMsg);
         setLoading(false);
       });
   // eslint-disable-next-line react-hooks/exhaustive-deps
