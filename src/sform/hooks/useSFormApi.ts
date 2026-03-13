@@ -101,7 +101,16 @@ export async function apiGetFormById(
     method: 'GET',
     headers
   });
-  return handleApiResponse<SFormData>(res, 'GetFormById');
+  
+  // API trả về { statusId, messager, data: SFormData[], totalRow }
+  // Cần extract phần tử đầu tiên từ array data
+  const response = await handleApiResponse<SFormData[]>(res, 'GetFormById');
+  
+  if (!response || response.length === 0) {
+    throw new Error('Form not found');
+  }
+  
+  return response[0];
 }
 
 /**

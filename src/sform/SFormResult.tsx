@@ -171,15 +171,15 @@ export function SFormResult({
           }
         }
 
-        // Parse employees
-        let employees: Employee[] = [];
-        try { employees = JSON.parse(result.employees); } catch { /* ignore */ }
+        // API không trả về employees trong response này
+        // Employees list sẽ là empty array
+        const employees: Employee[] = [];
 
         initForm(result, employees, []);
 
         // Load shops nếu cần
-        if (result.usedStores) {
-          const empId = result.createBy > 0 ? result.createBy : 0;
+        if (result.usedStores === true) {
+          const empId = result.createBy && result.createBy > 0 ? result.createBy : 0;
           apiGetShops(apiConfig, {
             accountId: result.accountId,
             employeeId: empId,

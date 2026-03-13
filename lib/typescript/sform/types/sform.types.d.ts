@@ -59,15 +59,22 @@ export interface SFormData {
     id: number;
     title: string;
     subTitle: string;
+    accessKey: string;
     banner: string | null;
     formData: string;
-    employees: string;
-    usedEmployees: boolean;
-    usedStores: boolean;
+    usedEmployees: boolean | null;
+    usedStores: boolean | null;
     toDate: number | null;
     fromDate: number | null;
+    fromTime: string | null;
+    toTime: string | null;
     accountId: number;
-    createBy: number;
+    createBy: number | null;
+    createDate: string | null;
+    status: string | null;
+    slogan: string | null;
+    inApp: boolean | null;
+    publicUrl: string | null;
 }
 export interface Employee {
     Id: number;
