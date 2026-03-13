@@ -24,17 +24,29 @@ export function NumberField({ config }: NumberFieldProps) {
       return;
     }
     
-    // Check min/max constraints
-    if (config.min !== undefined && num < config.min) {
-      onChange(config.min);
-      return;
-    }
-    if (config.max !== undefined && num > config.max) {
-      onChange(config.max);
-      return;
+    onChange(num);
+  };
+
+  // Validate min/max when blur
+  const handleBlur = () => {
+    setIsFocused(false);
+    
+    // Check constraints on blur
+    const num = parseFloat(String(value));
+    if (!isNaN(num)) {
+      let finalValue = num;
+      
+      if (config.min !== undefined && num < config.min) {
+        finalValue = config.min;
+        onChange(finalValue);
+      }
+      if (config.max !== undefined && num > config.max) {
+        finalValue = config.max;
+        onChange(finalValue);
+      }
     }
     
-    onChange(num);
+    onBlur();
   };
 
   const styles = StyleSheet.create({
@@ -77,7 +89,7 @@ export function NumberField({ config }: NumberFieldProps) {
           value={value !== '' && value !== undefined && value !== null ? String(value) : ''}
           onChangeText={handleChange}
           onFocus={() => setIsFocused(true)}
-          onBlur={() => { setIsFocused(false); onBlur(); }}
+          onBlur={handleBlur}
           placeholder={config.placeholder}
           placeholderTextColor={theme.colors.placeholder}
           keyboardType="numeric"

@@ -65,7 +65,7 @@ export function DateField({ config }: DateFieldProps) {
         <DateTimePicker
           value={dateValue}
           mode={mode as 'date' | 'time' | 'datetime'}
-          display={Platform.OS === 'ios' ? 'spinner' : 'default'}
+          display="spinner"
           onChange={(_, selectedDate) => {
             setShow(Platform.OS === 'ios');
             if (selectedDate) { onChange(selectedDate); onBlur(); }

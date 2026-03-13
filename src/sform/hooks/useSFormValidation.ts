@@ -92,8 +92,8 @@ export function useSFormValidation({
             case 4: // Checkbox
             case 5: // Radio
               if (answers.anwserValue === 'true' || answers.anwserValue === true as unknown as string) {
-                if (answers.id === 99 && !answers.ortherValue) {
-                  onError(`Chưa trả lời câu hỏi: ${question.questionName}`);
+                if (answers.id === 99 && (!answers.ortherValue || answers.ortherValue.trim() === '')) {
+                  onError(`Chưa nhập nội dung cho câu hỏi: ${question.questionName}`);
                   isCheck = false;
                   return { isValid: false, enrichedFormData: null };
                 } else {
