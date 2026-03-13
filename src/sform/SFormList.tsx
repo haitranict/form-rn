@@ -58,10 +58,13 @@ export function SFormList({
       const response = await apiGetFormList(apiConfig, shopId);
       console.log('SFormList - API Response:', response);
       
-      if (response.code === 200) {
+      if (response.statusId === 200) {
         setForms(response.data || []);
+        console.log('SFormList - Loaded forms count:', response.data?.length || 0);
       } else {
-        setError(response.message || 'Không thể tải danh sách form');
+        const errorMsg = response.messager || 'Không thể tải danh sách form';
+        console.log('SFormList - Error:', errorMsg);
+        setError(errorMsg);
       }
     } catch (err: any) {
       console.error('SFormList - Error:', err);

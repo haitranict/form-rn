@@ -140,8 +140,9 @@ export interface FormListItem {
     Banner?: string;
 }
 export interface FormListResponse {
-    code: number;
-    message: string;
+    statusId: number;
+    messager: string;
     data: FormListItem[];
+    totalRow?: number;
 }
 //# sourceMappingURL=sform.types.d.ts.map

@@ -204,7 +204,8 @@ export interface FormListItem {
 
 // Response wrapper
 export interface FormListResponse {
-  code: number;              // 200 = success
-  message: string;
+  statusId: number;          // 200 = success
+  messager: string;          // Note: API uses 'messager' not 'message'
   data: FormListItem[];
+  totalRow?: number;         // Total count of forms
 }
