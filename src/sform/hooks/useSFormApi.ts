@@ -56,7 +56,6 @@ async function handleApiResponse<T>(
     }
     throw new Error(errorMessage);
   }
-
   // Layer 2: Parse response body
   const body = await res.json();
   console.log(`${apiName} - Response body:`, body);
@@ -90,32 +89,31 @@ export async function apiGetFormById(
   // Pass FormKey và shopId qua headers theo yêu cầu API
   headers['FormKey'] = formKey;
   headers['shopId'] = shopId.toString();
-  
-  const url = `${config.baseUrl}/shop/formbyKey`;
-  
+
+  const url = `${config.baseUrl}shop/formbyKey`;
+
   console.log('=== apiGetFormById Request ===');
   console.log('URL:', url);
   console.log('FormKey:', formKey);
   console.log('shopId:', shopId);
-  
-  const res = await fetch(url, { 
+
+  const res = await fetch(url, {
     method: 'GET',
-    headers 
+    headers
   });
   return handleApiResponse<SFormData>(res, 'GetFormById');
 }
 
 /**
  * GetShops - Lấy danh sách cửa hàng theo accountId + employeeId
- * POST /api/SForm/GetShops
+ * POST /shop/storemanager
  */
 export async function apiGetShops(
   config: SFormApiConfig,
   data: { accountId: number; employeeId: number }
 ): Promise<Shop[]> {
-  const url = `${config.baseUrl}/api/SForm/GetShops`;
-  console.log('apiGetShops - URL:', url, 'data:', data);
-  
+  const url = `${config.baseUrl}shop/storemanager`;
+  console.log('storemanager - URL:', url, 'data:', data);
   const res = await fetch(url, {
     method: 'POST',
     headers: buildHeaders(config),
@@ -126,15 +124,15 @@ export async function apiGetShops(
 
 /**
  * InsertResult - Submit form
- * POST /api/SForm/InsertResult
+ * POST /uploaded/spiralform
  */
 export async function apiInsertResult(
   config: SFormApiConfig,
   payload: InsertResultPayload
 ): Promise<InsertResultResponse> {
-  const url = `${config.baseUrl}/api/SForm/InsertResult`;
+  const url = `${config.baseUrl}uploaded/spiralform`;
   console.log('apiInsertResult - URL:', url);
-  
+
   const res = await fetch(url, {
     method: 'POST',
     headers: buildHeaders(config),
@@ -145,7 +143,7 @@ export async function apiInsertResult(
 
 /**
  * UploadImages - Upload ảnh từ gallery/camera
- * POST /api/SForm/UploadImages (multipart/form-data)
+ * POST /uploaded/spiralphoto (multipart/form-data)
  */
 export async function apiUploadImages(
   config: SFormApiConfig,
@@ -162,10 +160,10 @@ export async function apiUploadImages(
       ? config.token
       : `Bearer ${config.token}`;
   }
-  
-  const url = `${config.baseUrl}/api/SForm/UploadImages`;
+
+  const url = `${config.baseUrl}uploaded/spiralphoto`;
   console.log('apiUploadImages - URL:', url, 'files:', files.length);
-  
+
   const res = await fetch(url, {
     method: 'POST',
     headers,
@@ -176,7 +174,7 @@ export async function apiUploadImages(
 
 /**
  * UploadAudio - Upload audio files
- * POST /api/SForm/UploadAudio (multipart/form-data)
+ * POST /uploaded/audio (multipart/form-data)
  */
 export async function apiUploadAudio(
   config: SFormApiConfig,
@@ -192,10 +190,10 @@ export async function apiUploadAudio(
       ? config.token
       : `Bearer ${config.token}`;
   }
-  
-  const url = `${config.baseUrl}/api/SForm/UploadAudio`;
+
+  const url = `${config.baseUrl}uploaded/audio`;
   console.log('apiUploadAudio - URL:', url, 'files:', files.length);
-  
+
   const res = await fetch(url, {
     method: 'POST',
     headers,
@@ -216,9 +214,9 @@ export async function apiGetFormList(
   const headers = buildHeaders(config);
   // Gửi shopId qua header
   headers['shopId'] = shopId.toString();
-  
-  const url = `${config.baseUrl}/shop/formlist`;
-  
+
+  const url = `${config.baseUrl}shop/formlist`;
+
   // Log request details
   console.log('=== apiGetFormList Request ===');
   console.log('URL:', url);
@@ -227,16 +225,16 @@ export async function apiGetFormList(
     ...headers,
     Authorization: headers.Authorization ? `${headers.Authorization.substring(0, 20)}...` : 'none'
   });
-  
+
   const res = await fetch(url, {
     method: 'GET',
     headers,
   });
-  
+
   // Layer 1: Check HTTP status
   console.log('=== HTTP Response ===');
   console.log('Status:', res.status, res.statusText);
-  
+
   if (!res.ok) {
     let errorMessage = `GetFormList failed: HTTP ${res.status}`;
     try {
@@ -248,7 +246,7 @@ export async function apiGetFormList(
     }
     throw new Error(errorMessage);
   }
-  
+
   // Layer 2: Parse and validate business response
   const body = await res.json();
   console.log('=== Response Body ===');
@@ -256,13 +254,13 @@ export async function apiGetFormList(
   console.log('messager:', body.messager);
   console.log('data count:', body.data?.length || 0);
   console.log('totalRow:', body.totalRow);
-  
+
   // Validate business status
   if (body.statusId !== 200) {
     throw new Error(
       `GetFormList failed: statusId ${body.statusId} - ${body.messager || 'Unknown error'}`
     );
   }
-  
+
   return body as import('../types/sform.types').FormListResponse;
 }

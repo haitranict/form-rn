@@ -11,7 +11,7 @@ export interface SFormApiConfig {
 export declare function apiGetFormById(config: SFormApiConfig, formKey: string, shopId?: number): Promise<SFormData>;
 /**
  * GetShops - Lấy danh sách cửa hàng theo accountId + employeeId
- * POST /api/SForm/GetShops
+ * POST /shop/storemanager
  */
 export declare function apiGetShops(config: SFormApiConfig, data: {
     accountId: number;
@@ -19,12 +19,12 @@ export declare function apiGetShops(config: SFormApiConfig, data: {
 }): Promise<Shop[]>;
 /**
  * InsertResult - Submit form
- * POST /api/SForm/InsertResult
+ * POST /uploaded/spiralform
  */
 export declare function apiInsertResult(config: SFormApiConfig, payload: InsertResultPayload): Promise<InsertResultResponse>;
 /**
  * UploadImages - Upload ảnh từ gallery/camera
- * POST /api/SForm/UploadImages (multipart/form-data)
+ * POST /uploaded/spiralphoto (multipart/form-data)
  */
 export declare function apiUploadImages(config: SFormApiConfig, files: Array<{
     uri: string;
@@ -33,7 +33,7 @@ export declare function apiUploadImages(config: SFormApiConfig, files: Array<{
 }>): Promise<UploadResult[]>;
 /**
  * UploadAudio - Upload audio files
- * POST /api/SForm/UploadAudio (multipart/form-data)
+ * POST /uploaded/audio (multipart/form-data)
  */
 export declare function apiUploadAudio(config: SFormApiConfig, files: Array<{
     uri: string;
