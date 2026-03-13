@@ -37,7 +37,7 @@ export function AnswerDate({ question, onChange }: Props) {
         <DateTimePicker
           value={dateValue}
           mode="date"
-          display={Platform.OS === 'ios' ? 'spinner' : 'default'}
+          display="spinner"
           onChange={(_, date) => {
             setShow(Platform.OS === 'ios');
             onChange(question, date ?? null);
