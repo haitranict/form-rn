@@ -16,6 +16,27 @@ export function NumberField({ config }: NumberFieldProps) {
 
   if (!isVisible) return null;
 
+  // Validate min/max
+  const handleChange = (text: string) => {
+    const num = parseFloat(text);
+    if (isNaN(num)) {
+      onChange('');
+      return;
+    }
+    
+    // Check min/max constraints
+    if (config.min !== undefined && num < config.min) {
+      onChange(config.min);
+      return;
+    }
+    if (config.max !== undefined && num > config.max) {
+      onChange(config.max);
+      return;
+    }
+    
+    onChange(num);
+  };
+
   const styles = StyleSheet.create({
     row: {
       flexDirection: 'row',
@@ -41,17 +62,20 @@ export function NumberField({ config }: NumberFieldProps) {
     },
   });
 
+  // Helper text for min/max
+  const helperText = [];
+  if (config.min !== undefined) helperText.push(`Min: ${config.min}`);
+  if (config.max !== undefined) helperText.push(`Max: ${config.max}`);
+  const helper = helperText.length > 0 ? helperText.join(' | ') : undefined;
+
   return (
-    <FieldWrapper label={config.label} description={config.description} error={error?.message} required={isRequired}>
+    <FieldWrapper label={config.label} description={helper || config.description} error={error?.message} required={isRequired}>
       <View style={[styles.row, config.style as object]}>
         {config.prefix ? <Text style={styles.affix}>{config.prefix}</Text> : null}
         <TextInput
           style={styles.input}
           value={value !== '' && value !== undefined && value !== null ? String(value) : ''}
-          onChangeText={(text) => {
-            const num = parseFloat(text);
-            onChange(isNaN(num) ? '' : num);
-          }}
+          onChangeText={handleChange}
           onFocus={() => setIsFocused(true)}
           onBlur={() => { setIsFocused(false); onBlur(); }}
           placeholder={config.placeholder}

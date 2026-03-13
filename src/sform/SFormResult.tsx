@@ -30,6 +30,8 @@ import { FormUserInfo } from './components/FormUserInfo';
 import { FormExpired } from './components/FormExpired';
 import { FormSuccess } from './components/FormSuccess';
 import { StepNavigation } from './components/StepNavigation';
+import { FormIntro } from './components/FormIntro';
+import { FormTimer } from './components/FormTimer';
 
 // Địa phương (tỉnh/huyện/xã) - cần file dvhcvn.json trong project
 // import dvhcvn from '../../asset/filedata/dvhcvn.json';
@@ -83,6 +85,8 @@ export function SFormResult({
   style,
 }: SFormResultProps) {
   const [currentStep, setCurrentStep] = React.useState(0);
+  const [showIntro, setShowIntro] = React.useState(mode === 'fill'); // Show intro for fill mode
+  const [startTime, setStartTime] = React.useState<Date | null>(null);
   
   // Ưu tiên dùng formKey nếu có, ko thì dùng formId
   const queryKey = formKey || formId;
@@ -393,7 +397,8 @@ export function SFormResult({
         return !!currentQ.anwserItem[0]?.anwserValue;
       
       case 3: // Number
-        return !!currentQ.anwserItem[0]?.anwserValue;
+        const numValue = currentQ.anwserItem[0]?.anwserValue;
+        return numValue !== null && numValue !== undefined && numValue !== '';
       
       case 4: // Checkbox
       case 5: // Radio
@@ -402,14 +407,28 @@ export function SFormResult({
       case 6: // Date
         return !!currentQ.anwserItem[0]?.anwserValue;
       
-      case 7: // Image
-      case 8: // Camera
-        const imgs = state.imageQuestion.filter((img) => img.questionId === currentQ.questionId);
+      case 7: // Image upload
         try {
-          const uploaded = JSON.parse(currentQ.anwserItem[0]?.anwserValue || '[]');
-          return uploaded.length > 0 || imgs.length > 0;
+          const uploadedStr = currentQ.anwserItem[0]?.anwserValue;
+          if (!uploadedStr) return false;
+          const uploaded = JSON.parse(uploadedStr);
+          return Array.isArray(uploaded) && uploaded.length > 0;
         } catch {
-          return imgs.length > 0;
+          return false;
+        }
+      
+      case 8: // Camera
+        // Check both uploaded images and pending camera images
+        const cameraImgs = state.imageQuestion.filter((img) => img.questionId === currentQ.questionId);
+        if (cameraImgs.length > 0) return true;
+        
+        try {
+          const uploadedStr = currentQ.anwserItem[0]?.anwserValue;
+          if (!uploadedStr) return false;
+          const uploaded = JSON.parse(uploadedStr);
+          return Array.isArray(uploaded) && uploaded.length > 0;
+        } catch {
+          return false;
         }
       
       case 10: // Grid
@@ -468,6 +487,27 @@ export function SFormResult({
   }
 
   // ============================================================
+  // Show Intro Screen (before starting the survey)
+  // ============================================================
+  if (showIntro && mode === 'fill') {
+    return (
+      <FormIntro
+        title={state.formData.title}
+        subTitle={state.formData.subTitle}
+        banner={state.formData.banner}
+        fromDate={state.formData.fromDate}
+        toDate={state.formData.toDate}
+        fromTime={state.formData.fromTime}
+        toTime={state.formData.toTime}
+        onStart={() => {
+          setShowIntro(false);
+          setStartTime(new Date());
+        }}
+      />
+    );
+  }
+
+  // ============================================================
   // Render Form
   // ============================================================
   return (
@@ -477,8 +517,20 @@ export function SFormResult({
         contentContainerStyle={styles.scrollContent}
         keyboardShouldPersistTaps="handled"
       >
-        <FormBanner banner={state.formData.banner} />
-        <FormTitle formData={state.formData} />
+        {/* Timer - only show after started and in fill mode */}
+        {startTime && mode === 'fill' && (
+          <View style={styles.timerContainer}>
+            <FormTimer startTime={startTime} />
+          </View>
+        )}
+
+        {/* Show banner and title only in 'all' mode, not in step mode */}
+        {displayMode === 'all' && (
+          <>
+            <FormBanner banner={state.formData.banner} />
+            <FormTitle formData={state.formData} />
+          </>
+        )}
 
         <FormUserInfo
           formData={state.formData}
@@ -562,6 +614,10 @@ const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#F8F9FA' },
   scroll: { flex: 1 },
   scrollContent: { padding: 16, paddingBottom: 100 },
+  timerContainer: {
+    alignItems: 'center',
+    marginBottom: 16,
+  },
   center: { flex: 1, alignItems: 'center', justifyContent: 'center', padding: 32 },
   loadingText: { marginTop: 16, fontSize: 16, color: '#5F6368', fontWeight: '500' },
   emptyText: { fontSize: 16, color: '#5F6368' },
