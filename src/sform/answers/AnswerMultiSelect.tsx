@@ -21,13 +21,17 @@ export function AnswerMultiSelect({ question, onChange }: Props) {
   let selected: string[] = [];
   try {
     const v = JSON.parse(rawValue);
-    if (Array.isArray(v)) selected = v.map((x) => (typeof x === 'object' ? x.name : String(x)));
+    if (Array.isArray(v)) {
+      // Handle both formats: string[] or object[]
+      selected = v.map((x) => (typeof x === 'object' && x.name ? x.name : String(x)));
+    }
   } catch { /* ignore */ }
 
   const toggle = (item: string) => {
     const exists = selected.includes(item);
     const next = exists ? selected.filter((s) => s !== item) : [...selected, item];
-    onChange(question, next.map((n) => ({ name: n, value: n })));
+    // Save as simple string array instead of object array
+    onChange(question, next);
   };
 
   const displayText = selected.length > 0 ? selected.join(', ') : 'Chọn câu trả lời';

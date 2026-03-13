@@ -24,6 +24,37 @@ export function AnswerNumber({ question, onChange }: Props) {
     onChange(question, clean);
   };
 
+  const handleBlur = () => {
+    setIsFocused(false);
+    
+    // Validate min/max constraints
+    const clean = display.replace(/,/g, '');
+    const num = parseFloat(clean);
+    
+    if (!isNaN(num)) {
+      const min = question.min ? parseFloat(question.min) : null;
+      const max = question.max ? parseFloat(question.max) : null;
+      
+      let finalValue = num;
+      let changed = false;
+      
+      if (min !== null && num < min) {
+        finalValue = min;
+        changed = true;
+      }
+      if (max !== null && num > max) {
+        finalValue = max;
+        changed = true;
+      }
+      
+      if (changed) {
+        const finalDisplay = formatThousand(String(finalValue));
+        setDisplay(finalDisplay);
+        onChange(question, String(finalValue));
+      }
+    }
+  };
+
   return (
     <View style={[styles.row, isFocused && styles.focused]}>
       <TextInput
@@ -31,7 +62,7 @@ export function AnswerNumber({ question, onChange }: Props) {
         value={display === '' ? undefined : display}
         onChangeText={handleChange}
         onFocus={() => setIsFocused(true)}
-        onBlur={() => setIsFocused(false)}
+        onBlur={handleBlur}
         placeholder="Nhập câu trả lời (Number)"
         placeholderTextColor="#9AA0A6"
         keyboardType="numeric"
