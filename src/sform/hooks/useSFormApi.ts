@@ -149,7 +149,16 @@ export async function apiInsertResult(
     headers: buildHeaders(config),
     body: JSON.stringify(payload),
   });
-  return handleApiResponse<InsertResultResponse>(res, 'InsertResult');
+
+  // For InsertResult, the entire response body IS the data we need
+  // Don't use handleApiResponse which returns only wrapped.data
+  if (!res.ok) {
+    throw new Error(`InsertResult failed: HTTP ${res.status}`);
+  }
+
+  const body = await res.json();
+  console.log('apiInsertResult - Response:', JSON.stringify(body, null, 2));
+  return body as InsertResultResponse;
 }
 
 /**

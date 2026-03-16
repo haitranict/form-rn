@@ -386,6 +386,7 @@ export function SFormResult({
     setIsSubmitting(true);
     try {
       const response = await apiInsertResult(apiConfig, payload);
+      console.log('Submit response:', JSON.stringify(response, null, 2));
 
       if (response.statusId === 200) {
         // Success - data có thể null, dùng formData.id làm resultId
@@ -394,9 +395,11 @@ export function SFormResult({
         showSuccess(response.messager);
         onSubmitSuccess?.(resultId);
       } else {
+        console.log('Submit failed - statusId:', response.statusId);
         showError(response.messager || 'Gửi thất bại');
       }
-    } catch {
+    } catch (error) {
+      console.error('Submit error:', error);
       showError('Lỗi kết nối. Vui lòng thử lại.');
     } finally {
       setIsSubmitting(false);
