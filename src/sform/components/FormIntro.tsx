@@ -25,11 +25,16 @@ export function FormIntro({
 }: FormIntroProps) {
   // Parse banner JSON to get imageURL
   const getBannerUrl = () => {
+    console.log('[FormIntro] banner raw:', banner);
     if (!banner) return null;
     try {
       const config = JSON.parse(banner);
-      return config?.imageURL || null;
-    } catch {
+      console.log('[FormIntro] parsed config:', config);
+      const url = config?.imageURL || null;
+      console.log('[FormIntro] extracted imageURL:', url);
+      return url;
+    } catch (e) {
+      console.error('[FormIntro] JSON parse error:', e);
       return null;
     }
   };

@@ -184,7 +184,6 @@ export interface InsertResultPayload {
   fromTime?: string | null;  // TimeSpan as "HH:mm:ss" or null
   toTime?: string | null;    // TimeSpan as "HH:mm:ss" or null
 }
-
 // Submit API response
 export interface InsertResultResponse {
   statusId: number;     // 200 = success
@@ -192,7 +191,6 @@ export interface InsertResultResponse {
   data: any | null;     // Response data (can be null)
   totalRow: number;     // Total row count
 }
-
 // Form state (dùng trong useSFormState)
 export interface SFormState {
   formData: SFormData | null;
