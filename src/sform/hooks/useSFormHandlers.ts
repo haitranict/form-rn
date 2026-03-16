@@ -279,23 +279,31 @@ export function useSFormHandlers({
 
             try {
               const incoming: string[] = JSON.parse(strValue);
-              if (max > 0) {
-                let current: string[] = [];
-                if (existing && existing !== '') {
-                  try { current = JSON.parse(existing); } catch { /* ignore */ }
-                }
-                let count = current.length;
-                incoming.forEach((url) => {
-                  if (count < max) { current.push(url); count++; }
-                });
-                imageArr = current;
-              } else {
-                let current: string[] = [];
-                if (existing && existing !== '') {
-                  try { current = JSON.parse(existing); } catch { /* ignore */ }
-                }
-                imageArr = [...current, ...incoming];
+              let current: string[] = [];
+              if (existing && existing !== '') {
+                try { current = JSON.parse(existing); } catch { /* ignore */ }
               }
+
+              console.log(`[useSFormHandlers case ${ansType}] Current: ${current.length} items, Incoming: ${incoming.length} items`);
+
+              // Merge with duplicate detection
+              incoming.forEach((url) => {
+                // Skip if already exists
+                if (current.includes(url)) {
+                  console.log(`[useSFormHandlers] Skipping duplicate: "${url}"`);
+                  return;
+                }
+                // Check max limit
+                if (max > 0 && current.length >= max) {
+                  console.log(`[useSFormHandlers] Max limit (${max}) reached, skipping: "${url}"`);
+                  return;
+                }
+                current.push(url);
+                console.log(`[useSFormHandlers] Added: "${url}" (total: ${current.length})`);
+              });
+              
+              console.log(`[useSFormHandlers case ${ansType}] Final array: ${current.length} items`);
+              imageArr = current;
             } catch {
               imageArr = [];
             }

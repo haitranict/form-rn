@@ -318,106 +318,28 @@ export function SFormResult({
     (question: Question) => {
       if (onPickImageFromGallery) {
         onPickImageFromGallery(question.questionId, (imageUri: string) => {
-          console.log(`[handlePickImageFromGallery] ========== START ==========`);
-          console.log(`[handlePickImageFromGallery] Callback received for Q${question.questionId}: "${imageUri}"`);
-          
-          // Get LATEST question from state to avoid stale closure
-          let currentQuestion = question;
-          if (state.formData) {
-            try {
-              const questions: Question[] = JSON.parse(state.formData.formData);
-              const found = questions.find((q) => q.questionId === question.questionId);
-              if (found) {
-                console.log(`[handlePickImageFromGallery] Found latest question from state`);
-                currentQuestion = found;
-              }
-            } catch { /* ignore parse error */ }
-          }
-          
-          // Parse existing images from LATEST state
-          const raw = currentQuestion.anwserItem[0].anwserValue;
-          let images: string[] = [];
-          try {
-            if (raw) images = JSON.parse(raw);
-          } catch { /* ignore */ }
-          
-          console.log(`[handlePickImageFromGallery] Current images (${images.length}):`, JSON.stringify(images));
-          
-          // Add new image (check duplicate)
-          const isDuplicate = images.includes(imageUri);
-          console.log(`[handlePickImageFromGallery] Duplicate check: "${imageUri}" ${isDuplicate ? 'ALREADY EXISTS' : 'is new'}`);
-          
-          if (!isDuplicate) {
-            images.push(imageUri);
-            console.log(`[handlePickImageFromGallery] ✅ Added image. New total: ${images.length}`);
-          } else {
-            console.warn(`[handlePickImageFromGallery] ❌ SKIPPED duplicate`);
-          }
-          
-          // Save back to form
-          handleOnChange(currentQuestion, JSON.stringify(images));
-          console.log(`[handlePickImageFromGallery] ========== END ==========`);
+          console.log(`[handlePickImageFromGallery] Received new image: "${imageUri}"`);
+          // Send only the new image URI as array with 1 item
+          // useSFormHandlers will handle duplicate detection and merging
+          handleOnChange(question, JSON.stringify([imageUri]));
         });
       }
     },
-    [onPickImageFromGallery, handleOnChange, state.formData]
+    [onPickImageFromGallery, handleOnChange]
   );
 
   const handleCaptureImageFromCamera = useCallback(
     (question: Question) => {
       if (onCaptureImageFromCamera) {
         onCaptureImageFromCamera(question.questionId, (imageUri: string) => {
-          console.log(`[handleCaptureImageFromCamera] ========== START ==========`);
-          console.log(`[handleCaptureImageFromCamera] Callback received for Q${question.questionId}: "${imageUri}"`);
-          
-          // Get LATEST question from state to avoid stale closure
-          let currentQuestion = question;
-          if (state.formData) {
-            try {
-              const questions: Question[] = JSON.parse(state.formData.formData);
-              const found = questions.find((q) => q.questionId === question.questionId);
-              if (found) {
-                console.log(`[handleCaptureImageFromCamera] Found latest question from state`);
-                currentQuestion = found;
-              } else {
-                console.warn(`[handleCaptureImageFromCamera] Question ${question.questionId} not found in state, using closure`);
-              }
-            } catch (err) {
-              console.error(`[handleCaptureImageFromCamera] Error parsing formData:`, err);
-            }
-          } else {
-            console.warn(`[handleCaptureImageFromCamera] No formData in state, using closure`);
-          }
-          
-          // Parse existing images from LATEST state
-          const raw = currentQuestion.anwserItem[0].anwserValue;
-          let images: string[] = [];
-          try {
-            if (raw) images = JSON.parse(raw);
-          } catch { /* ignore */ }
-          
-          console.log(`[handleCaptureImageFromCamera] Current images array (${images.length}):`, JSON.stringify(images));
-          
-          // Add new image (check duplicate)
-          const isDuplicate = images.includes(imageUri);
-          console.log(`[handleCaptureImageFromCamera] Duplicate check: "${imageUri}" ${isDuplicate ? 'ALREADY EXISTS' : 'is new'}`);
-          
-          if (!isDuplicate) {
-            images.push(imageUri);
-            console.log(`[handleCaptureImageFromCamera] ✅ Added image. New total: ${images.length}`);
-            console.log(`[handleCaptureImageFromCamera] Updated array:`, JSON.stringify(images));
-          } else {
-            console.warn(`[handleCaptureImageFromCamera] ❌ SKIPPED duplicate: "${imageUri}"`);
-            console.log(`[handleCaptureImageFromCamera] Array unchanged:`, JSON.stringify(images));
-          }
-          
-          // Save back to form
-          handleOnChange(currentQuestion, JSON.stringify(images));
-          console.log(`[handleCaptureImageFromCamera] ========== END ==========`);
+          console.log(`[handleCaptureImageFromCamera] Received new image: "${imageUri}"`);
+          // Send only the new image URI as array with 1 item
+          // useSFormHandlers will handle duplicate detection and merging
+          handleOnChange(question, JSON.stringify([imageUri]));
         });
       }
     },
-    [onCaptureImageFromCamera, handleOnChange, state.formData]
+    [onCaptureImageFromCamera, handleOnChange]
   );
 
   // ============================================================
@@ -427,68 +349,28 @@ export function SFormResult({
     (question: Question) => {
       if (onRecordAudio) {
         onRecordAudio(question.questionId, (audioUri: string) => {
-          // Get LATEST question from state
-          let currentQuestion = question;
-          if (state.formData) {
-            try {
-              const questions: Question[] = JSON.parse(state.formData.formData);
-              const found = questions.find((q) => q.questionId === question.questionId);
-              if (found) currentQuestion = found;
-            } catch { /* ignore parse error */ }
-          }
-          
-          // Parse existing audio files from LATEST state
-          const raw = currentQuestion.anwserItem[0].anwserValue;
-          let audioUrls: string[] = [];
-          try {
-            if (raw) audioUrls = JSON.parse(raw);
-          } catch { /* ignore */ }
-          
-          // Add new audio file (check duplicate)
-          if (!audioUrls.includes(audioUri)) {
-            audioUrls.push(audioUri);
-          }
-          
-          // Save back to form
-          handleOnChange(currentQuestion, JSON.stringify(audioUrls));
+          console.log(`[handleRecordAudio] Received new audio: "${audioUri}"`);
+          // Send only the new audio URI as array with 1 item
+          // useSFormHandlers will handle duplicate detection and merging
+          handleOnChange(question, JSON.stringify([audioUri]));
         });
       }
     },
-    [onRecordAudio, handleOnChange, state.formData]
+    [onRecordAudio, handleOnChange]
   );
 
   const handlePickAudioFromFiles = useCallback(
     (question: Question) => {
       if (onPickAudioFromFiles) {
         onPickAudioFromFiles(question.questionId, (audioUri: string) => {
-          // Get LATEST question from state
-          let currentQuestion = question;
-          if (state.formData) {
-            try {
-              const questions: Question[] = JSON.parse(state.formData.formData);
-              const found = questions.find((q) => q.questionId === question.questionId);
-              if (found) currentQuestion = found;
-            } catch { /* ignore parse error */ }
-          }
-          
-          // Parse existing audio files from LATEST state
-          const raw = currentQuestion.anwserItem[0].anwserValue;
-          let audioUrls: string[] = [];
-          try {
-            if (raw) audioUrls = JSON.parse(raw);
-          } catch { /* ignore */ }
-          
-          // Add new audio file (check duplicate)
-          if (!audioUrls.includes(audioUri)) {
-            audioUrls.push(audioUri);
-          }
-          
-          // Save back to form
-          handleOnChange(currentQuestion, JSON.stringify(audioUrls));
+          console.log(`[handlePickAudioFromFiles] Received new audio: "${audioUri}"`);
+          // Send only the new audio URI as array with 1 item
+          // useSFormHandlers will handle duplicate detection and merging
+          handleOnChange(question, JSON.stringify([audioUri]));
         });
       }
     },
-    [onPickAudioFromFiles, handleOnChange, state.formData]
+    [onPickAudioFromFiles, handleOnChange]
   );
 
   // ============================================================
