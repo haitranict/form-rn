@@ -101,15 +101,15 @@ export async function apiGetFormById(
     method: 'GET',
     headers
   });
-  
+
   // API trả về { statusId, messager, data: SFormData[], totalRow }
   // Cần extract phần tử đầu tiên từ array data
   const response = await handleApiResponse<SFormData[]>(res, 'GetFormById');
-  
+
   if (!response || response.length === 0) {
     throw new Error('Form not found');
   }
-  
+
   return response[0];
 }
 
@@ -133,14 +133,14 @@ export async function apiGetShops(
 
 /**
  * InsertResult - Submit form
- * POST /uploaded/spiralform
+ * POST /upload/spiralform
  * Payload format: spiralFormModel (shopId, formDate, publicKey, spiralData, fromTime, toTime)
  */
 export async function apiInsertResult(
   config: SFormApiConfig,
   payload: InsertResultPayload
 ): Promise<InsertResultResponse> {
-  const url = `${config.baseUrl}uploaded/spiralform`;
+  const url = `${config.baseUrl}upload/spiralform`;
   console.log('apiInsertResult - URL:', url);
   console.log('apiInsertResult - Payload:', JSON.stringify(payload, null, 2));
 
