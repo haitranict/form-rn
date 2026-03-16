@@ -116,8 +116,12 @@ export interface UploadResult {
     message: string;
 }
 export interface InsertResultPayload {
-    dataByDomain: string;
-    formData: SFormData;
+    shopId: number;
+    formDate: number;
+    publicKey: string;
+    spiralData: string;
+    fromTime?: string | null;
+    toTime?: string | null;
 }
 export interface InsertResultResponse {
     result: number;

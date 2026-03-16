@@ -134,6 +134,7 @@ export async function apiGetShops(
 /**
  * InsertResult - Submit form
  * POST /uploaded/spiralform
+ * Payload format: spiralFormModel (shopId, formDate, publicKey, spiralData, fromTime, toTime)
  */
 export async function apiInsertResult(
   config: SFormApiConfig,
@@ -141,6 +142,7 @@ export async function apiInsertResult(
 ): Promise<InsertResultResponse> {
   const url = `${config.baseUrl}uploaded/spiralform`;
   console.log('apiInsertResult - URL:', url);
+  console.log('apiInsertResult - Payload:', JSON.stringify(payload, null, 2));
 
   const res = await fetch(url, {
     method: 'POST',

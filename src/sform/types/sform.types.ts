@@ -175,10 +175,14 @@ export interface UploadResult {
   message: string;
 }
 
-// Submit payload
+// Submit payload - matches backend spiralFormModel
 export interface InsertResultPayload {
-  dataByDomain: string;
-  formData: SFormData;
+  shopId: number;
+  formDate: number;          // YYYYMMDD format
+  publicKey: string;
+  spiralData: string;        // JSON string of questions/answers
+  fromTime?: string | null;  // TimeSpan as "HH:mm:ss" or null
+  toTime?: string | null;    // TimeSpan as "HH:mm:ss" or null
 }
 
 // Submit API response

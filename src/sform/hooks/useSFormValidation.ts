@@ -1,4 +1,5 @@
 import { useCallback } from 'react';
+import moment from 'moment';
 import type {
   SFormData,
   Question,
@@ -23,8 +24,8 @@ interface ValidationOptions {
 
 interface ValidationResult {
   isValid: boolean;
-  /** formData với employeeId/shopId đã được gán */
-  enrichedFormData: SFormData | null;
+  /** Payload khớp với backend spiralFormModel */
+  payload: import('../types/sform.types').InsertResultPayload | null;
 }
 
 function parseDateToNum(d: string): number {
@@ -40,7 +41,7 @@ export function useSFormValidation({
   onError,
 }: ValidationOptions) {
   const validate = useCallback((): ValidationResult => {
-    if (!formData) return { isValid: false, enrichedFormData: null };
+    if (!formData) return { isValid: false, payload: null };
 
     const questions: Question[] = JSON.parse(formData.formData);
     let isCheck = true;
@@ -71,20 +72,20 @@ export function useSFormValidation({
               if (!answers.anwserValue) {
                 onError(`Chưa trả lời câu hỏi: ${question.questionName}`);
                 isCheck = false;
-                return { isValid: false, enrichedFormData: null };
+                return { isValid: false, payload: null };
               }
               const numVal = parseFloat(answers.anwserValue);
               if (!isNaN(numVal) && !isNaN(min) && !isNaN(max)) {
                 if (numVal > max || numVal < min) {
                   onError(`${question.questionName}: phải thuộc khoảng ${min} đến ${max}`);
                   isCheck = false;
-                  return { isValid: false, enrichedFormData: null };
+                  return { isValid: false, payload: null };
                 }
               }
               if (isNaN(max) && !isNaN(min) && numVal < min) {
                 onError(`${question.questionName}: nhập thấp nhất là ${min}`);
                 isCheck = false;
-                return { isValid: false, enrichedFormData: null };
+                return { isValid: false, payload: null };
               }
               break;
             }
@@ -95,7 +96,7 @@ export function useSFormValidation({
                 if (answers.id === 99 && (!answers.ortherValue || answers.ortherValue.trim() === '')) {
                   onError(`Chưa nhập nội dung cho câu hỏi: ${question.questionName}`);
                   isCheck = false;
-                  return { isValid: false, enrichedFormData: null };
+                  return { isValid: false, payload: null };
                 } else {
                   check = true;
                 }
@@ -104,7 +105,7 @@ export function useSFormValidation({
                 if (noAnswer === count && !check) {
                   onError(`Chưa trả lời câu hỏi: ${question.questionName}`);
                   isCheck = false;
-                  return { isValid: false, enrichedFormData: null };
+                  return { isValid: false, payload: null };
                 }
               }
               break;
@@ -119,13 +120,13 @@ export function useSFormValidation({
                 if (ansD > maxD || ansD < minD) {
                   onError(`${question.questionName}: phải thuộc khoảng ${question.min} đến ${question.max}`);
                   isCheck = false;
-                  return { isValid: false, enrichedFormData: null };
+                  return { isValid: false, payload: null };
                 }
               }
               if (!answers.anwserValue) {
                 onError(`Chưa trả lời câu hỏi: ${question.questionName}`);
                 isCheck = false;
-                return { isValid: false, enrichedFormData: null };
+                return { isValid: false, payload: null };
               }
               break;
             }
@@ -143,7 +144,7 @@ export function useSFormValidation({
               ) {
                 onError(`Chưa trả lời câu hỏi: ${question.questionName}`);
                 isCheck = false;
-                return { isValid: false, enrichedFormData: null };
+                return { isValid: false, payload: null };
               }
               if (question.min && Number(question.min) > 0) {
                 let total = 0;
@@ -156,7 +157,7 @@ export function useSFormValidation({
                     `Câu hỏi: ${question.questionName}. Yêu cầu số lượng hình tối thiểu là: ${question.min}`
                   );
                   isCheck = false;
-                  return { isValid: false, enrichedFormData: null };
+                  return { isValid: false, payload: null };
                 }
               }
               break;
@@ -166,7 +167,7 @@ export function useSFormValidation({
               if (answers.anwserValue === '' || answers.anwserValue === '[]') {
                 onError(`Chưa trả lời câu hỏi: ${question.questionName}`);
                 isCheck = false;
-                return { isValid: false, enrichedFormData: null };
+                return { isValid: false, payload: null };
               }
               // Check minimum audio count if specified
               if (question.min && Number(question.min) > 0) {
@@ -180,7 +181,7 @@ export function useSFormValidation({
                     `Câu hỏi: ${question.questionName}. Yêu cầu số lượng audio tối thiểu là: ${question.min}`
                   );
                   isCheck = false;
-                  return { isValid: false, enrichedFormData: null };
+                  return { isValid: false, payload: null };
                 }
               }
               break;
@@ -199,7 +200,7 @@ export function useSFormValidation({
               if (totalFilled === 0) {
                 onError(`Chưa trả lời câu hỏi: ${question.questionName}`);
                 isCheck = false;
-                return { isValid: false, enrichedFormData: null };
+                return { isValid: false, payload: null };
               }
               break;
             }
@@ -213,12 +214,12 @@ export function useSFormValidation({
                 if (!options.includes(valName)) {
                   onError(`Chưa trả lời câu hỏi: ${question.questionName}`);
                   isCheck = false;
-                  return { isValid: false, enrichedFormData: null };
+                  return { isValid: false, payload: null };
                 }
               } catch {
                 onError(`Chưa trả lời câu hỏi: ${question.questionName}`);
                 isCheck = false;
-                return { isValid: false, enrichedFormData: null };
+                return { isValid: false, payload: null };
               }
               break;
             }
@@ -227,7 +228,7 @@ export function useSFormValidation({
               if (!answers.anwserValue) {
                 onError(`Chưa trả lời câu hỏi: ${question.questionName}`);
                 isCheck = false;
-                return { isValid: false, enrichedFormData: null };
+                return { isValid: false, payload: null };
               }
               break;
             }
@@ -246,7 +247,7 @@ export function useSFormValidation({
             if (!isNaN(val)) {
               if (val > max || val < min) {
                 onError(`${question.questionName}: phải thuộc khoảng ${min} đến ${max}`);
-                return { isValid: false, enrichedFormData: null };
+                return { isValid: false, payload: null };
               }
             }
           }
@@ -261,7 +262,7 @@ export function useSFormValidation({
             const ansD = parseDateToNum(answers.anwserValue);
             if (ansD > maxD || ansD < minD) {
               onError(`${question.questionName}: phải thuộc khoảng ${question.min} đến ${question.max}`);
-              return { isValid: false, enrichedFormData: null };
+              return { isValid: false, payload: null };
             }
           }
         }
@@ -272,7 +273,7 @@ export function useSFormValidation({
     if (formData.usedEmployees) {
       if (!selectedEmployee || selectedEmployee.Id <= 0) {
         onError('Bạn chưa chọn nhân viên');
-        return { isValid: false, enrichedFormData: null };
+        return { isValid: false, payload: null };
       }
     }
 
@@ -280,23 +281,21 @@ export function useSFormValidation({
     if (formData.usedStores) {
       if (!selectedShop || selectedShop.shopId <= 0) {
         onError('Bạn chưa chọn cửa hàng');
-        return { isValid: false, enrichedFormData: null };
+        return { isValid: false, payload: null };
       }
     }
 
-    // ---- Build enriched payload ----
-    const enriched: SFormData = {
-      ...formData,
-      formData: JSON.stringify(questions),
+    // ---- Build payload matching backend spiralFormModel ----
+    const payload: import('../types/sform.types').InsertResultPayload = {
+      shopId: selectedShop?.shopId || 0,
+      formDate: parseInt(moment().format('YYYYMMDD'), 10),
+      publicKey: formData.accessKey || '',
+      spiralData: JSON.stringify(questions),
+      fromTime: formData.fromTime || null,
+      toTime: formData.toTime || null,
     };
-    if (formData.usedEmployees && selectedEmployee) {
-      (enriched as SFormData & { employeeId: number }).employeeId = selectedEmployee.Id;
-    }
-    if (formData.usedStores && selectedShop) {
-      (enriched as SFormData & { shopId: number }).shopId = selectedShop.shopId;
-    }
 
-    return { isValid: isCheck, enrichedFormData: enriched };
+    return { isValid: isCheck, payload };
   }, [
     formData,
     checkList,

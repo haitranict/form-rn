@@ -13,8 +13,8 @@ interface ValidationOptions {
 }
 interface ValidationResult {
     isValid: boolean;
-    /** formData với employeeId/shopId đã được gán */
-    enrichedFormData: SFormData | null;
+    /** Payload khớp với backend spiralFormModel */
+    payload: import('../types/sform.types').InsertResultPayload | null;
 }
 export declare function useSFormValidation({ formData, checkList, selectedEmployee, selectedShop, imageQuestion, onError, }: ValidationOptions): {
     validate: () => ValidationResult;

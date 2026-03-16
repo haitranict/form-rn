@@ -380,15 +380,12 @@ export function SFormResult({
   const handleSubmit = useCallback(async () => {
     if (!state.formData) return;
 
-    const { isValid, enrichedFormData } = validate();
-    if (!isValid || !enrichedFormData) return;
+    const { isValid, payload } = validate();
+    if (!isValid || !payload) return;
 
     setIsSubmitting(true);
     try {
-      const response = await apiInsertResult(apiConfig, {
-        dataByDomain: queryKey,
-        formData: enrichedFormData,
-      });
+      const response = await apiInsertResult(apiConfig, payload);
 
       if (response.result === 1) {
         const resultId = parseInt(response.error, 10);
@@ -405,7 +402,6 @@ export function SFormResult({
     }
   }, [
     apiConfig,
-    queryKey,
     onSubmitSuccess,
     setIsSubmitting,
     setSended,
