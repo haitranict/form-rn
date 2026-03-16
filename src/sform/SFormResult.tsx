@@ -318,44 +318,75 @@ export function SFormResult({
     (question: Question) => {
       if (onPickImageFromGallery) {
         onPickImageFromGallery(question.questionId, (imageUri: string) => {
-          // Parse existing images
-          const raw = question.anwserItem[0].anwserValue;
+          // Get LATEST question from state to avoid stale closure
+          let currentQuestion = question;
+          if (state.formData) {
+            try {
+              const questions: Question[] = JSON.parse(state.formData.formData);
+              const found = questions.find((q) => q.questionId === question.questionId);
+              if (found) currentQuestion = found;
+            } catch { /* ignore parse error */ }
+          }
+          
+          // Parse existing images from LATEST state
+          const raw = currentQuestion.anwserItem[0].anwserValue;
           let images: string[] = [];
           try {
             if (raw) images = JSON.parse(raw);
           } catch { /* ignore */ }
           
-          // Add new image
-          images.push(imageUri);
+          // Add new image (check duplicate)
+          if (!images.includes(imageUri)) {
+            images.push(imageUri);
+          }
           
           // Save back to form
-          handleOnChange(question, JSON.stringify(images));
+          handleOnChange(currentQuestion, JSON.stringify(images));
         });
       }
     },
-    [onPickImageFromGallery, handleOnChange]
+    [onPickImageFromGallery, handleOnChange, state.formData]
   );
 
   const handleCaptureImageFromCamera = useCallback(
     (question: Question) => {
       if (onCaptureImageFromCamera) {
         onCaptureImageFromCamera(question.questionId, (imageUri: string) => {
-          // Parse existing images
-          const raw = question.anwserItem[0].anwserValue;
+          console.log(`[handleCaptureImageFromCamera] Callback received for Q${question.questionId}: "${imageUri}"`);
+          
+          // Get LATEST question from state to avoid stale closure
+          let currentQuestion = question;
+          if (state.formData) {
+            try {
+              const questions: Question[] = JSON.parse(state.formData.formData);
+              const found = questions.find((q) => q.questionId === question.questionId);
+              if (found) currentQuestion = found;
+            } catch { /* ignore parse error */ }
+          }
+          
+          // Parse existing images from LATEST state
+          const raw = currentQuestion.anwserItem[0].anwserValue;
           let images: string[] = [];
           try {
             if (raw) images = JSON.parse(raw);
           } catch { /* ignore */ }
           
-          // Add new image
-          images.push(imageUri);
+          console.log(`[handleCaptureImageFromCamera] Current images (${images.length}):`, images);
+          
+          // Add new image (check duplicate)
+          if (!images.includes(imageUri)) {
+            images.push(imageUri);
+            console.log(`[handleCaptureImageFromCamera] Added new image. Total: ${images.length}`);
+          } else {
+            console.warn(`[handleCaptureImageFromCamera] Duplicate detected, skipping: "${imageUri}"`);
+          }
           
           // Save back to form
-          handleOnChange(question, JSON.stringify(images));
+          handleOnChange(currentQuestion, JSON.stringify(images));
         });
       }
     },
-    [onCaptureImageFromCamera, handleOnChange]
+    [onCaptureImageFromCamera, handleOnChange, state.formData]
   );
 
   // ============================================================
@@ -365,44 +396,68 @@ export function SFormResult({
     (question: Question) => {
       if (onRecordAudio) {
         onRecordAudio(question.questionId, (audioUri: string) => {
-          // Parse existing audio files
-          const raw = question.anwserItem[0].anwserValue;
+          // Get LATEST question from state
+          let currentQuestion = question;
+          if (state.formData) {
+            try {
+              const questions: Question[] = JSON.parse(state.formData.formData);
+              const found = questions.find((q) => q.questionId === question.questionId);
+              if (found) currentQuestion = found;
+            } catch { /* ignore parse error */ }
+          }
+          
+          // Parse existing audio files from LATEST state
+          const raw = currentQuestion.anwserItem[0].anwserValue;
           let audioUrls: string[] = [];
           try {
             if (raw) audioUrls = JSON.parse(raw);
           } catch { /* ignore */ }
           
-          // Add new audio file
-          audioUrls.push(audioUri);
+          // Add new audio file (check duplicate)
+          if (!audioUrls.includes(audioUri)) {
+            audioUrls.push(audioUri);
+          }
           
           // Save back to form
-          handleOnChange(question, JSON.stringify(audioUrls));
+          handleOnChange(currentQuestion, JSON.stringify(audioUrls));
         });
       }
     },
-    [onRecordAudio, handleOnChange]
+    [onRecordAudio, handleOnChange, state.formData]
   );
 
   const handlePickAudioFromFiles = useCallback(
     (question: Question) => {
       if (onPickAudioFromFiles) {
         onPickAudioFromFiles(question.questionId, (audioUri: string) => {
-          // Parse existing audio files
-          const raw = question.anwserItem[0].anwserValue;
+          // Get LATEST question from state
+          let currentQuestion = question;
+          if (state.formData) {
+            try {
+              const questions: Question[] = JSON.parse(state.formData.formData);
+              const found = questions.find((q) => q.questionId === question.questionId);
+              if (found) currentQuestion = found;
+            } catch { /* ignore parse error */ }
+          }
+          
+          // Parse existing audio files from LATEST state
+          const raw = currentQuestion.anwserItem[0].anwserValue;
           let audioUrls: string[] = [];
           try {
             if (raw) audioUrls = JSON.parse(raw);
           } catch { /* ignore */ }
           
-          // Add new audio file
-          audioUrls.push(audioUri);
+          // Add new audio file (check duplicate)
+          if (!audioUrls.includes(audioUri)) {
+            audioUrls.push(audioUri);
+          }
           
           // Save back to form
-          handleOnChange(question, JSON.stringify(audioUrls));
+          handleOnChange(currentQuestion, JSON.stringify(audioUrls));
         });
       }
     },
-    [onPickAudioFromFiles, handleOnChange]
+    [onPickAudioFromFiles, handleOnChange, state.formData]
   );
 
   // ============================================================

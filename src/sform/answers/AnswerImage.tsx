@@ -25,26 +25,43 @@ interface Props {
 function normalizeImageUri(uri: string, basePath?: string): string {
   if (!uri) return '';
   
-  // Already absolute URI (http, https, file with full path)
+  // Already absolute HTTP(S) URI
   if (uri.startsWith('http://') || uri.startsWith('https://')) {
     return uri;
   }
   
-  // Absolute file path
+  // Already absolute file path - return as-is
   if (uri.startsWith('file:///')) {
     return uri;
   }
   
-  // Relative path: file://20260313/xxx.jpg or 20260313/xxx.jpg
-  let relativePath = uri.replace(/^file:\/\//, '');
-  
-  // If basePath provided, construct full path
-  if (basePath) {
-    const fullPath = `${basePath}/files/${relativePath}`;
-    return Platform.OS === 'android' ? `file://${fullPath}` : fullPath;
+  // Handle file:// prefix (relative path with scheme)
+  // e.g., file://20260316/xxx.jpg
+  if (uri.startsWith('file://')) {
+    const relativePath = uri.substring(7); // Remove 'file://'
+    if (basePath) {
+      // basePath already has file:/// scheme, just append relative path
+      const cleanBase = basePath.replace(/\/$/, ''); // Remove trailing slash
+      return `${cleanBase}/${relativePath}`;
+    }
+    return uri; // No basePath, return as-is
   }
   
-  // Fallback: return as-is (might not work)
+  // Plain relative path (no scheme)
+  // e.g., 20260316/xxx.jpg
+  if (basePath && !uri.startsWith('/')) {
+    // basePath already has file:/// scheme and /files/, just append
+    const cleanBase = basePath.replace(/\/$/, ''); // Remove trailing slash
+    return `${cleanBase}/${uri}`;
+  }
+  
+  // Absolute local path without file:// scheme
+  // e.g., /data/user/0/com.app/files/xxx.jpg
+  if (uri.startsWith('/')) {
+    return `file://${uri}`;
+  }
+  
+  // Fallback: return as-is
   return uri;
 }
 
@@ -85,12 +102,19 @@ export function AnswerImage({ question, onChange, onDelete, onUpload, onPickFrom
         >
           {images.map((url, index) => {
             const displayUri = normalizeImageUri(url, filesBasePath);
+            console.log(`[AnswerImage] Image ${index + 1}: original="${url}" → display="${displayUri}"`);
             return (
               <View key={`${url}_${index}`} style={styles.imgWrapper}>
                 <Image 
                   source={{ uri: displayUri }} 
                   style={styles.img}
                   resizeMode="cover"
+                  onError={(e) => {
+                    console.error(`[AnswerImage] Failed to load image: ${displayUri}`, e.nativeEvent);
+                  }}
+                  onLoad={() => {
+                    console.log(`[AnswerImage] Successfully loaded: ${displayUri}`);
+                  }}
                 />
                 <TouchableOpacity
                   style={styles.deleteBtn}
