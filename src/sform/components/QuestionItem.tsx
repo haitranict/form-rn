@@ -1,5 +1,5 @@
-import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import React, { useState } from 'react';
+import { View, Text, StyleSheet, Image, TouchableOpacity, Modal, ScrollView, Dimensions } from 'react-native';
 import type { Question, CheckListItem } from '../types/sform.types';
 import type { AnswerItem } from '../types/sform.types';
 import { AnswerRenderer } from '../answers/AnswerRenderer';
@@ -64,8 +64,23 @@ export function QuestionItem({
   // Ẩn nếu checkList bảo không hiển thị
   if (!checkItem?.isShow) return null;
 
+  const [viewerVisible, setViewerVisible] = useState(false);
+  const [selectedImageIndex, setSelectedImageIndex] = useState(0);
+
   const ansType = question.anwserItem[0]?.anwserType ?? 0;
   const constraint = formatConstraint(question.min, question.max, ansType);
+
+  // Check if question has images
+  const questionImages = question.images || [];
+  const hasImages = questionImages.length > 0;
+
+  const handleImagePress = (index: number) => {
+    setSelectedImageIndex(index);
+    setViewerVisible(true);
+  };
+
+  const screenWidth = Dimensions.get('window').width;
+  const screenHeight = Dimensions.get('window').height;
 
   return (
     <View style={styles.card}>
@@ -81,6 +96,36 @@ export function QuestionItem({
           <Text style={styles.constraint}>( {constraint} )</Text>
         )}
       </View>
+
+      {/* Question Images */}
+      {hasImages && (
+        <View style={styles.imageGrid}>
+          <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+            {questionImages.map((img, index) => {
+              const imageUrl = img.imageURL.startsWith('http') 
+                ? img.imageURL 
+                : `https://vnmpg.spiral.com.vn/${img.imageURL}`;
+              
+              return (
+                <TouchableOpacity 
+                  key={index} 
+                  onPress={() => handleImagePress(index)}
+                  activeOpacity={0.8}
+                >
+                  <Image
+                    source={{ uri: imageUrl }}
+                    style={[
+                      styles.thumbnail,
+                      { height: img.imageHeight || 100 }
+                    ]}
+                    resizeMode="cover"
+                  />
+                </TouchableOpacity>
+              );
+            })}
+          </ScrollView>
+        </View>
+      )}
 
       {/* Answer */}
       <View style={styles.answerContainer}>
@@ -104,6 +149,70 @@ export function QuestionItem({
           onChange={onChange}
         />
       </View>
+
+      {/* Image Viewer Modal */}
+      <Modal
+        visible={viewerVisible}
+        transparent={true}
+        animationType="fade"
+        onRequestClose={() => setViewerVisible(false)}
+      >
+        <View style={styles.modalContainer}>
+          <TouchableOpacity 
+            style={styles.modalBackdrop}
+            activeOpacity={1}
+            onPress={() => setViewerVisible(false)}
+          >
+            <View style={styles.modalContent}>
+              <ScrollView
+                horizontal
+                pagingEnabled
+                showsHorizontalScrollIndicator={false}
+                contentOffset={{ x: selectedImageIndex * screenWidth, y: 0 }}
+              >
+                {questionImages.map((img, index) => {
+                  const imageUrl = img.imageURL.startsWith('http') 
+                    ? img.imageURL 
+                    : `https://vnmpg.spiral.com.vn/${img.imageURL}`;
+                  
+                  return (
+                    <View key={index} style={{ width: screenWidth, height: screenHeight }}>
+                      <ScrollView
+                        maximumZoomScale={3}
+                        minimumZoomScale={1}
+                        contentContainerStyle={styles.zoomContainer}
+                      >
+                        <Image
+                          source={{ uri: imageUrl }}
+                          style={styles.fullImage}
+                          resizeMode="contain"
+                        />
+                      </ScrollView>
+                    </View>
+                  );
+                })}
+              </ScrollView>
+              
+              {/* Close button */}
+              <TouchableOpacity 
+                style={styles.closeButton}
+                onPress={() => setViewerVisible(false)}
+              >
+                <Text style={styles.closeButtonText}>✕</Text>
+              </TouchableOpacity>
+
+              {/* Image counter */}
+              {questionImages.length > 1 && (
+                <View style={styles.imageCounter}>
+                  <Text style={styles.imageCounterText}>
+                    {selectedImageIndex + 1} / {questionImages.length}
+                  </Text>
+                </View>
+              )}
+            </View>
+          </TouchableOpacity>
+        </View>
+      </Modal>
     </View>
   );
 }
@@ -147,18 +256,65 @@ const styles = StyleSheet.create({
     minHeight: 48,
   },
   imageGrid: {
-    marginTop: 12,
-  },
-  thumbnailRow: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 8,
+    marginTop: 8,
+    marginBottom: 12,
   },
   thumbnail: {
-    width: 100,
-    height: 100,
+    width: 120,
     borderRadius: 8,
     marginRight: 8,
-    marginBottom: 8,
+    borderWidth: 1,
+    borderColor: '#E0E0E0',
+  },
+  modalContainer: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.95)',
+  },
+  modalBackdrop: {
+    flex: 1,
+  },
+  modalContent: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  zoomContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  fullImage: {
+    width: Dimensions.get('window').width,
+    height: Dimensions.get('window').height,
+  },
+  closeButton: {
+    position: 'absolute',
+    top: 50,
+    right: 20,
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: 'rgba(255, 255, 255, 0.3)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  closeButtonText: {
+    color: '#fff',
+    fontSize: 24,
+    fontWeight: 'bold',
+  },
+  imageCounter: {
+    position: 'absolute',
+    bottom: 50,
+    alignSelf: 'center',
+    backgroundColor: 'rgba(0, 0, 0, 0.6)',
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 20,
+  },
+  imageCounterText: {
+    color: '#fff',
+    fontSize: 14,
+    fontWeight: '600',
   },
 });

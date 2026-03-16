@@ -59,6 +59,12 @@ export function FormIntro({
           source={{ uri: bannerUrl }}
           style={styles.banner}
           resizeMode="cover"
+          onError={(error) => {
+            console.error('[FormIntro] Image load error:', error.nativeEvent.error);
+          }}
+          onLoad={() => {
+            console.log('[FormIntro] Image loaded successfully');
+          }}
         />
       )}
 

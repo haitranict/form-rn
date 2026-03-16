@@ -30,7 +30,11 @@ export type AnswerType = 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 10 | 11 | 12 | 13 | 16;
 export type QuestionType = 0 | 101 | 102 | 103 | 104 | 105 | 106;
 
 export interface AnswerImage {
+  imageId?: number | null;
   imageURL: string;
+  imageData?: string | null;
+  imageHeight?: number;
+  imageIndex?: number | null;
 }
 
 export interface AnswerItem {
