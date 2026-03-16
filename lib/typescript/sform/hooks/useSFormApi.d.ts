@@ -19,7 +19,7 @@ export declare function apiGetShops(config: SFormApiConfig, data: {
 }): Promise<Shop[]>;
 /**
  * InsertResult - Submit form
- * POST /uploaded/spiralform
+ * POST /upload/spiralform
  * Payload format: spiralFormModel (shopId, formDate, publicKey, spiralData, fromTime, toTime)
  */
 export declare function apiInsertResult(config: SFormApiConfig, payload: InsertResultPayload): Promise<InsertResultResponse>;

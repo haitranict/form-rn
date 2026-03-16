@@ -387,13 +387,14 @@ export function SFormResult({
     try {
       const response = await apiInsertResult(apiConfig, payload);
 
-      if (response.result === 1) {
-        const resultId = parseInt(response.error, 10);
+      if (response.statusId === 200) {
+        // Success - data có thể null, dùng formData.id làm resultId
+        const resultId = state.formData?.id || 0;
         setSended(resultId);
-        showSuccess(response.messenger);
+        showSuccess(response.messager);
         onSubmitSuccess?.(resultId);
       } else {
-        showError(response.messenger || 'Gửi thất bại');
+        showError(response.messager || 'Gửi thất bại');
       }
     } catch {
       showError('Lỗi kết nối. Vui lòng thử lại.');

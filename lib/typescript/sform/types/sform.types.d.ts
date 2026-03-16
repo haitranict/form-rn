@@ -124,9 +124,10 @@ export interface InsertResultPayload {
     toTime?: string | null;
 }
 export interface InsertResultResponse {
-    result: number;
-    error: string;
-    messenger: string;
+    statusId: number;
+    messager: string;
+    data: any | null;
+    totalRow: number;
 }
 export interface SFormState {
     formData: SFormData | null;

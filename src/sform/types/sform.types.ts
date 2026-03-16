@@ -187,9 +187,10 @@ export interface InsertResultPayload {
 
 // Submit API response
 export interface InsertResultResponse {
-  result: number;     // 1 = success
-  error: string;      // resultId as string when success
-  messenger: string;
+  statusId: number;     // 200 = success
+  messager: string;     // Message from server (note: API uses 'messager' not 'message')
+  data: any | null;     // Response data (can be null)
+  totalRow: number;     // Total row count
 }
 
 // Form state (dùng trong useSFormState)
