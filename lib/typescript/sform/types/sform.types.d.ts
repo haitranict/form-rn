@@ -99,6 +99,18 @@ export interface Province {
     name: string;
     level2s: District[];
 }
+export interface Ward2025 {
+    level2_id: number;
+    name: string;
+}
+export interface Province2025 {
+    level1_id: number;
+    name: string;
+    level2s: Ward2025[];
+}
+export interface DVHC2025Data {
+    data: Province2025[];
+}
 export interface UploadResult {
     fileUrl: string;
     message: string;

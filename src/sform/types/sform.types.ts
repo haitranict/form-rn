@@ -135,7 +135,7 @@ export interface Shop {
   shopNameVN: string;
 }
 
-// Province / District / Town (dvhcvn structure)
+// Province / District / Town (dvhcvn structure - old)
 export interface Town {
   level3_id: string;
   name: string;
@@ -151,6 +151,22 @@ export interface Province {
   level1_id: string;
   name: string;
   level2s: District[];
+}
+
+// DVHC 2025 structure (Province → Ward directly, no District)
+export interface Ward2025 {
+  level2_id: number;
+  name: string;
+}
+
+export interface Province2025 {
+  level1_id: number;
+  name: string;
+  level2s: Ward2025[];
+}
+
+export interface DVHC2025Data {
+  data: Province2025[];
 }
 
 // Upload result

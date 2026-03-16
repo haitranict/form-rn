@@ -1,7 +1,7 @@
 import React from 'react';
 import type { Question, CheckListItem } from '../types/sform.types';
 import type { AnswerItem } from '../types/sform.types';
-import type { Province, District, Town } from '../types/sform.types';
+import type { Province, District, Town, Province2025 } from '../types/sform.types';
 interface CameraImage {
     index: number;
     questionId: number;
@@ -32,8 +32,9 @@ interface Props {
     onRecordAudio?: (question: Question) => void;
     onPickAudioFromFiles?: (question: Question) => void;
     filesBasePath?: string;
+    dvhc2025?: Province2025[];
     onChange: (question: Question, value: unknown, answerItem?: AnswerItem) => void;
 }
-export declare function QuestionItem({ question, checkItem, provinces, districts, towns, cameraImages, onCapture, onDeleteCameraImage, onDeleteUploadedImage, onUploadImages, onUploadAudio, onPickImageFromGallery, onCaptureImageFromCamera, onRecordAudio, onPickAudioFromFiles, filesBasePath, onChange, }: Props): React.JSX.Element | null;
+export declare function QuestionItem({ question, checkItem, provinces, districts, towns, cameraImages, onCapture, onDeleteCameraImage, onDeleteUploadedImage, onUploadImages, onUploadAudio, onPickImageFromGallery, onCaptureImageFromCamera, onRecordAudio, onPickAudioFromFiles, filesBasePath, dvhc2025, onChange, }: Props): React.JSX.Element | null;
 export {};
 //# sourceMappingURL=QuestionItem.d.ts.map

@@ -1,9 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import {
   View, Text, TextInput, TouchableOpacity, Modal, FlatList,
   StyleSheet, SafeAreaView,
 } from 'react-native';
-import type { Question, AnswerItem, Province, District, Town } from '../types/sform.types';
+import type { Question, AnswerItem, Province, District, Town, Province2025, Ward2025 } from '../types/sform.types';
 
 interface Props {
   question: Question;
@@ -11,6 +11,8 @@ interface Props {
   districts: District[];
   towns: Town[];
   onChange: (question: Question, value: unknown, answerItem: AnswerItem) => void;
+  /** DVHC 2025 data - if provided, will use this instead of provinces/districts/towns */
+  dvhc2025?: Province2025[];
 }
 
 function SearchModal({
@@ -65,10 +67,23 @@ function SearchModal({
   );
 }
 
-export function AnswerAddress({ question, provinces, districts, towns, onChange }: Props) {
+export function AnswerAddress({ question, provinces, districts, towns, onChange, dvhc2025 }: Props) {
   const [showProvince, setShowProvince] = useState(false);
   const [showDistrict, setShowDistrict] = useState(false);
   const [showTown, setShowTown] = useState(false);
+
+  const useDVHC2025 = !!dvhc2025;
+
+  // Get selected province to filter wards
+  const selectedProvinceItem = question.anwserItem.find((a) => a.id === 2);
+  const selectedProvinceName = selectedProvinceItem?.anwserValue || '';
+
+  // Get wards for selected province (DVHC 2025 mode)
+  const wards2025 = useMemo(() => {
+    if (!useDVHC2025 || !selectedProvinceName || !dvhc2025) return [];
+    const province = dvhc2025.find((p) => p.name === selectedProvinceName);
+    return province?.level2s || [];
+  }, [useDVHC2025, selectedProvinceName, dvhc2025]);
 
   const getItem = (id: number) => question.anwserItem.find((a) => a.id === id);
 
@@ -102,7 +117,7 @@ export function AnswerAddress({ question, provinces, districts, towns, onChange 
               </TouchableOpacity>
               <SearchModal
                 visible={showProvince}
-                data={provinces}
+                data={useDVHC2025 ? (dvhc2025 || []) : provinces}
                 labelKey="name"
                 title="Chọn Tỉnh/Thành"
                 onSelect={(p) => onChange(question, p, item)}
@@ -112,6 +127,9 @@ export function AnswerAddress({ question, provinces, districts, towns, onChange 
           );
         }
         if (item.id === 3) {
+          // Skip district field in DVHC 2025 mode
+          if (useDVHC2025) return null;
+
           return (
             <View key={item.id} style={styles.field}>
               <Text style={styles.fieldLabel}>{item.anwserName}</Text>
@@ -136,12 +154,15 @@ export function AnswerAddress({ question, provinces, districts, towns, onChange 
           );
         }
         if (item.id === 4) {
+          const wardData = useDVHC2025 ? wards2025 : towns;
+          const isDisabled = wardData.length === 0;
+
           return (
             <View key={item.id} style={styles.field}>
               <Text style={styles.fieldLabel}>{item.anwserName}</Text>
               <TouchableOpacity
-                style={[styles.picker, towns.length === 0 && styles.disabled]}
-                onPress={() => towns.length > 0 && setShowTown(true)}
+                style={[styles.picker, isDisabled && styles.disabled]}
+                onPress={() => !isDisabled && setShowTown(true)}
               >
                 <Text style={[styles.pickerText, !item.anwserValue && styles.placeholder]}>
                   {item.anwserValue || 'Chọn phường/xã'}
@@ -150,7 +171,7 @@ export function AnswerAddress({ question, provinces, districts, towns, onChange 
               </TouchableOpacity>
               <SearchModal
                 visible={showTown}
-                data={towns}
+                data={wardData}
                 labelKey="name"
                 title="Chọn Phường/Xã"
                 onSelect={(t) => onChange(question, t, item)}

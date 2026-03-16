@@ -3,7 +3,7 @@ import { View, Text, StyleSheet } from 'react-native';
 import type { Question, CheckListItem } from '../types/sform.types';
 import type { AnswerItem } from '../types/sform.types';
 import { AnswerRenderer } from '../answers/AnswerRenderer';
-import type { Province, District, Town } from '../types/sform.types';
+import type { Province, District, Town, Province2025 } from '../types/sform.types';
 
 interface CameraImage { index: number; questionId: number; imageData: string; }
 
@@ -20,10 +20,11 @@ interface Props {
   onUploadImages: (files: Array<{ uri: string; name: string; type: string }>, q: Question) => void;
   onUploadAudio: (files: Array<{ uri: string; name: string; type: string }>, q: Question) => void;
   onPickImageFromGallery?: (question: Question) => void;
-  onCaptureImageFromCamera?: (question: Question) => void;
+  onCaptureImageFromCamera?: (question: Question) =>void;
   onRecordAudio?: (question: Question) => void;
   onPickAudioFromFiles?: (question: Question) => void;
   filesBasePath?: string;
+  dvhc2025?: Province2025[];
   onChange: (question: Question, value: unknown, answerItem?: AnswerItem) => void;
 }
 
@@ -57,6 +58,7 @@ export function QuestionItem({
   onRecordAudio,
   onPickAudioFromFiles,
   filesBasePath,
+  dvhc2025,
   onChange,
 }: Props) {
   // Ẩn nếu checkList bảo không hiển thị
@@ -98,6 +100,7 @@ export function QuestionItem({
           onRecordAudio={onRecordAudio}
           onPickAudioFromFiles={onPickAudioFromFiles}
           filesBasePath={filesBasePath}
+          dvhc2025={dvhc2025}
           onChange={onChange}
         />
       </View>

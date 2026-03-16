@@ -1,5 +1,5 @@
 import React from 'react';
-import type { Question, AnswerItem, Province, District, Town } from '../types/sform.types';
+import type { Question, AnswerItem, Province, District, Town, Province2025 } from '../types/sform.types';
 import { AnswerInput } from './AnswerInput';
 import { AnswerTextArea } from './AnswerTextArea';
 import { AnswerNumber } from './AnswerNumber';
@@ -33,6 +33,7 @@ interface Props {
   onRecordAudio?: (question: Question) => void;
   onPickAudioFromFiles?: (question: Question) => void;
   filesBasePath?: string;
+  dvhc2025?: Province2025[];
   onChange: (question: Question, value: unknown, answerItem?: AnswerItem) => void;
 }
 
@@ -52,6 +53,7 @@ export function AnswerRenderer({
   onRecordAudio,
   onPickAudioFromFiles,
   filesBasePath,
+  dvhc2025,
   onChange,
 }: Props) {
   if (question.anwserItem.length === 0) {
@@ -151,6 +153,7 @@ export function AnswerRenderer({
           districts={districts}
           towns={towns}
           onChange={onChange}
+          dvhc2025={dvhc2025}
         />
       );
     case 12:

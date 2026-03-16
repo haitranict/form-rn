@@ -27,4 +27,5 @@ export type { FieldType, FieldOption, FieldConfig, BaseFieldConfig, TextFieldCon
 export type { FormConfig, FormPage as FormPageConfig, FormSubmitData, } from './types/form.types';
 export type { FieldError, FormErrors, FormTouchedFields, } from './types/validation.types';
 export * from './sform/index';
+export * from './data/index';
 //# sourceMappingURL=index.d.ts.map

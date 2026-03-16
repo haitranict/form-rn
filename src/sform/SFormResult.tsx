@@ -11,7 +11,7 @@ import {
 } from 'react-native';
 import moment from 'moment';
 
-import type { Question, Employee, Shop, AnswerItem } from './types/sform.types';
+import type { Question, Employee, Shop, AnswerItem, Province2025 } from './types/sform.types';
 import { useSFormState } from './hooks/useSFormState';
 import { useSFormHandlers } from './hooks/useSFormHandlers';
 import { useSFormValidation } from './hooks/useSFormValidation';
@@ -72,6 +72,8 @@ export interface SFormResultProps {
   onPickAudioFromFiles?: (questionId: number, callback: (audioUri: string) => void) => void;
   /** Base path for files directory (e.g., from ReactNativeFS.DocumentDirectoryPath) */
   filesBasePath?: string;
+  /** DVHC 2025 data (Province → Ward directly, no District) */
+  dvhc2025?: Province2025[];
   /** Display mode: 'all' (hiện tất cả) hoặc 'step' (từng câu một) */
   displayMode?: 'all' | 'step';
   style?: ViewStyle;
@@ -96,6 +98,7 @@ export function SFormResult({
   onRecordAudio,
   onPickAudioFromFiles,
   filesBasePath,
+  dvhc2025,
   displayMode = 'all',
   style,
 }: SFormResultProps) {
@@ -671,6 +674,7 @@ export function SFormResult({
               onRecordAudio={handleRecordAudio}
               onPickAudioFromFiles={handlePickAudioFromFiles}
               filesBasePath={filesBasePath}
+              dvhc2025={dvhc2025}
               onChange={(q, v, ans) => handleOnChange(q, v, ans as AnswerItem | undefined)}
             />
           );

@@ -1,5 +1,6 @@
 import React from 'react';
 import { type ViewStyle } from 'react-native';
+import type { Province2025 } from './types/sform.types';
 import { type SFormApiConfig } from './hooks/useSFormApi';
 export interface SFormResultProps {
     /** String sau dấu ? trên URL, ví dụ "abc123" hoặc "formId=123&..." */
@@ -30,9 +31,11 @@ export interface SFormResultProps {
     onPickAudioFromFiles?: (questionId: number, callback: (audioUri: string) => void) => void;
     /** Base path for files directory (e.g., from ReactNativeFS.DocumentDirectoryPath) */
     filesBasePath?: string;
+    /** DVHC 2025 data (Province → Ward directly, no District) */
+    dvhc2025?: Province2025[];
     /** Display mode: 'all' (hiện tất cả) hoặc 'step' (từng câu một) */
     displayMode?: 'all' | 'step';
     style?: ViewStyle;
 }
-export declare function SFormResult({ formId, apiConfig, formKey, shopId, onSubmitSuccess, onSubmitError, mode, dataInput, onCameraCapture, onPickImageFromGallery, onCaptureImageFromCamera, onRecordAudio, onPickAudioFromFiles, filesBasePath, displayMode, style, }: SFormResultProps): React.JSX.Element;
+export declare function SFormResult({ formId, apiConfig, formKey, shopId, onSubmitSuccess, onSubmitError, mode, dataInput, onCameraCapture, onPickImageFromGallery, onCaptureImageFromCamera, onRecordAudio, onPickAudioFromFiles, filesBasePath, dvhc2025, displayMode, style, }: SFormResultProps): React.JSX.Element;
 //# sourceMappingURL=SFormResult.d.ts.map
