@@ -35,7 +35,9 @@ export interface SFormResultProps {
     dvhc2025?: Province2025[];
     /** Display mode: 'all' (hiện tất cả) hoặc 'step' (từng câu một) */
     displayMode?: 'all' | 'step';
+    /** Callback để lấy token mới nhất trước khi submit (tránh token hết hạn) */
+    onGetLatestToken?: () => string | Promise<string>;
     style?: ViewStyle;
 }
-export declare function SFormResult({ formId, apiConfig, formKey, shopId, onSubmitSuccess, onSubmitError, mode, dataInput, onCameraCapture, onPickImageFromGallery, onCaptureImageFromCamera, onRecordAudio, onPickAudioFromFiles, filesBasePath, dvhc2025, displayMode, style, }: SFormResultProps): React.JSX.Element;
+export declare function SFormResult({ formId, apiConfig, formKey, shopId, onSubmitSuccess, onSubmitError, mode, dataInput, onCameraCapture, onPickImageFromGallery, onCaptureImageFromCamera, onRecordAudio, onPickAudioFromFiles, filesBasePath, dvhc2025, displayMode, onGetLatestToken, style, }: SFormResultProps): React.JSX.Element;
 //# sourceMappingURL=SFormResult.d.ts.map

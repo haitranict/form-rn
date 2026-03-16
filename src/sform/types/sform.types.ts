@@ -126,6 +126,7 @@ export interface SFormData {
   slogan: string | null;
   inApp: boolean | null;
   publicUrl: string | null;
+  webUrl?: string | null;    // Base URL for images and resources
 }
 
 export interface Employee {

@@ -74,6 +74,8 @@ export interface SFormResultProps {
   dvhc2025?: Province2025[];
   /** Display mode: 'all' (hiện tất cả) hoặc 'step' (từng câu một) */
   displayMode?: 'all' | 'step';
+  /** Callback để lấy token mới nhất trước khi submit (tránh token hết hạn) */
+  onGetLatestToken?: () => string | Promise<string>;
   style?: ViewStyle;
 }
 
@@ -98,6 +100,7 @@ export function SFormResult({
   filesBasePath,
   dvhc2025,
   displayMode = 'all',
+  onGetLatestToken,
   style,
 }: SFormResultProps) {
   const [currentStep, setCurrentStep] = React.useState(0);
@@ -385,7 +388,18 @@ export function SFormResult({
 
     setIsSubmitting(true);
     try {
-      const response = await apiInsertResult(apiConfig, payload);
+      // Get latest token before submitting (avoid token expiration)
+      let currentApiConfig = apiConfig;
+      if (onGetLatestToken) {
+        const latestToken = await onGetLatestToken();
+        console.log('[Submit] Refreshed token before submit');
+        currentApiConfig = {
+          ...apiConfig,
+          token: latestToken,
+        };
+      }
+
+      const response = await apiInsertResult(currentApiConfig, payload);
       console.log('Submit response:', JSON.stringify(response, null, 2));
 
       if (response.statusId === 200) {
@@ -406,6 +420,7 @@ export function SFormResult({
     }
   }, [
     apiConfig,
+    onGetLatestToken,
     onSubmitSuccess,
     setIsSubmitting,
     setSended,
@@ -673,6 +688,7 @@ export function SFormResult({
               onPickAudioFromFiles={handlePickAudioFromFiles}
               filesBasePath={filesBasePath}
               dvhc2025={dvhc2025}
+              baseUrl={state.formData?.webUrl || undefined}
               onChange={(q, v, ans) => handleOnChange(q, v, ans as AnswerItem | undefined)}
             />
           );

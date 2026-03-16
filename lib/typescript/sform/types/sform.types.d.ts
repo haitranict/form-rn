@@ -79,6 +79,7 @@ export interface SFormData {
     slogan: string | null;
     inApp: boolean | null;
     publicUrl: string | null;
+    webUrl?: string | null;
 }
 export interface Employee {
     Id: number;

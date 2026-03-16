@@ -33,8 +33,9 @@ interface Props {
     onPickAudioFromFiles?: (question: Question) => void;
     filesBasePath?: string;
     dvhc2025?: Province2025[];
+    baseUrl?: string;
     onChange: (question: Question, value: unknown, answerItem?: AnswerItem) => void;
 }
-export declare function QuestionItem({ question, checkItem, provinces, districts, towns, cameraImages, onCapture, onDeleteCameraImage, onDeleteUploadedImage, onUploadImages, onUploadAudio, onPickImageFromGallery, onCaptureImageFromCamera, onRecordAudio, onPickAudioFromFiles, filesBasePath, dvhc2025, onChange, }: Props): React.JSX.Element | null;
+export declare function QuestionItem({ question, checkItem, provinces, districts, towns, cameraImages, onCapture, onDeleteCameraImage, onDeleteUploadedImage, onUploadImages, onUploadAudio, onPickImageFromGallery, onCaptureImageFromCamera, onRecordAudio, onPickAudioFromFiles, filesBasePath, dvhc2025, baseUrl, onChange, }: Props): React.JSX.Element | null;
 export {};
 //# sourceMappingURL=QuestionItem.d.ts.map

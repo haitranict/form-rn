@@ -25,6 +25,7 @@ interface Props {
   onPickAudioFromFiles?: (question: Question) => void;
   filesBasePath?: string;
   dvhc2025?: Province2025[];
+  baseUrl?: string;          // Base URL for question images
   onChange: (question: Question, value: unknown, answerItem?: AnswerItem) => void;
 }
 
@@ -59,6 +60,7 @@ export function QuestionItem({
   onPickAudioFromFiles,
   filesBasePath,
   dvhc2025,
+  baseUrl,
   onChange,
 }: Props) {
   // Ẩn nếu checkList bảo không hiển thị
@@ -104,7 +106,7 @@ export function QuestionItem({
             {questionImages.map((img, index) => {
               const imageUrl = img.imageURL.startsWith('http') 
                 ? img.imageURL 
-                : `https://vnmpg.spiral.com.vn/${img.imageURL}`;
+                : `${baseUrl || 'https://vnmpg.spiral.com.vn'}/${img.imageURL}`;
               
               return (
                 <TouchableOpacity 
@@ -173,7 +175,7 @@ export function QuestionItem({
                 {questionImages.map((img, index) => {
                   const imageUrl = img.imageURL.startsWith('http') 
                     ? img.imageURL 
-                    : `https://vnmpg.spiral.com.vn/${img.imageURL}`;
+                    : `${baseUrl || 'https://vnmpg.spiral.com.vn'}/${img.imageURL}`;
                   
                   return (
                     <View key={index} style={{ width: screenWidth, height: screenHeight }}>
