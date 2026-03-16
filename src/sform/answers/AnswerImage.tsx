@@ -40,9 +40,13 @@ function normalizeImageUri(uri: string, basePath?: string): string {
   if (uri.startsWith('file://')) {
     const relativePath = uri.substring(7); // Remove 'file://'
     if (basePath) {
-      // basePath already has file:/// scheme, just append relative path
       const cleanBase = basePath.replace(/\/$/, ''); // Remove trailing slash
-      return `${cleanBase}/${relativePath}`;
+      // Check if basePath already has file:// scheme
+      if (cleanBase.startsWith('file://')) {
+        return `${cleanBase}/${relativePath}`;
+      }
+      // basePath is plain path, add file:// scheme
+      return `file://${cleanBase}/${relativePath}`;
     }
     return uri; // No basePath, return as-is
   }
@@ -50,9 +54,13 @@ function normalizeImageUri(uri: string, basePath?: string): string {
   // Plain relative path (no scheme)
   // e.g., 20260316/xxx.jpg
   if (basePath && !uri.startsWith('/')) {
-    // basePath already has file:/// scheme and /files/, just append
     const cleanBase = basePath.replace(/\/$/, ''); // Remove trailing slash
-    return `${cleanBase}/${uri}`;
+    // Check if basePath already has file:// scheme
+    if (cleanBase.startsWith('file://')) {
+      return `${cleanBase}/${uri}`;
+    }
+    // basePath is plain path, add file:// scheme
+    return `file://${cleanBase}/${uri}`;
   }
   
   // Absolute local path without file:// scheme

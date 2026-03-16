@@ -318,13 +318,19 @@ export function SFormResult({
     (question: Question) => {
       if (onPickImageFromGallery) {
         onPickImageFromGallery(question.questionId, (imageUri: string) => {
+          console.log(`[handlePickImageFromGallery] ========== START ==========`);
+          console.log(`[handlePickImageFromGallery] Callback received for Q${question.questionId}: "${imageUri}"`);
+          
           // Get LATEST question from state to avoid stale closure
           let currentQuestion = question;
           if (state.formData) {
             try {
               const questions: Question[] = JSON.parse(state.formData.formData);
               const found = questions.find((q) => q.questionId === question.questionId);
-              if (found) currentQuestion = found;
+              if (found) {
+                console.log(`[handlePickImageFromGallery] Found latest question from state`);
+                currentQuestion = found;
+              }
             } catch { /* ignore parse error */ }
           }
           
@@ -335,13 +341,22 @@ export function SFormResult({
             if (raw) images = JSON.parse(raw);
           } catch { /* ignore */ }
           
+          console.log(`[handlePickImageFromGallery] Current images (${images.length}):`, JSON.stringify(images));
+          
           // Add new image (check duplicate)
-          if (!images.includes(imageUri)) {
+          const isDuplicate = images.includes(imageUri);
+          console.log(`[handlePickImageFromGallery] Duplicate check: "${imageUri}" ${isDuplicate ? 'ALREADY EXISTS' : 'is new'}`);
+          
+          if (!isDuplicate) {
             images.push(imageUri);
+            console.log(`[handlePickImageFromGallery] ✅ Added image. New total: ${images.length}`);
+          } else {
+            console.warn(`[handlePickImageFromGallery] ❌ SKIPPED duplicate`);
           }
           
           // Save back to form
           handleOnChange(currentQuestion, JSON.stringify(images));
+          console.log(`[handlePickImageFromGallery] ========== END ==========`);
         });
       }
     },
@@ -352,6 +367,7 @@ export function SFormResult({
     (question: Question) => {
       if (onCaptureImageFromCamera) {
         onCaptureImageFromCamera(question.questionId, (imageUri: string) => {
+          console.log(`[handleCaptureImageFromCamera] ========== START ==========`);
           console.log(`[handleCaptureImageFromCamera] Callback received for Q${question.questionId}: "${imageUri}"`);
           
           // Get LATEST question from state to avoid stale closure
@@ -360,8 +376,17 @@ export function SFormResult({
             try {
               const questions: Question[] = JSON.parse(state.formData.formData);
               const found = questions.find((q) => q.questionId === question.questionId);
-              if (found) currentQuestion = found;
-            } catch { /* ignore parse error */ }
+              if (found) {
+                console.log(`[handleCaptureImageFromCamera] Found latest question from state`);
+                currentQuestion = found;
+              } else {
+                console.warn(`[handleCaptureImageFromCamera] Question ${question.questionId} not found in state, using closure`);
+              }
+            } catch (err) {
+              console.error(`[handleCaptureImageFromCamera] Error parsing formData:`, err);
+            }
+          } else {
+            console.warn(`[handleCaptureImageFromCamera] No formData in state, using closure`);
           }
           
           // Parse existing images from LATEST state
@@ -371,18 +396,24 @@ export function SFormResult({
             if (raw) images = JSON.parse(raw);
           } catch { /* ignore */ }
           
-          console.log(`[handleCaptureImageFromCamera] Current images (${images.length}):`, images);
+          console.log(`[handleCaptureImageFromCamera] Current images array (${images.length}):`, JSON.stringify(images));
           
           // Add new image (check duplicate)
-          if (!images.includes(imageUri)) {
+          const isDuplicate = images.includes(imageUri);
+          console.log(`[handleCaptureImageFromCamera] Duplicate check: "${imageUri}" ${isDuplicate ? 'ALREADY EXISTS' : 'is new'}`);
+          
+          if (!isDuplicate) {
             images.push(imageUri);
-            console.log(`[handleCaptureImageFromCamera] Added new image. Total: ${images.length}`);
+            console.log(`[handleCaptureImageFromCamera] ✅ Added image. New total: ${images.length}`);
+            console.log(`[handleCaptureImageFromCamera] Updated array:`, JSON.stringify(images));
           } else {
-            console.warn(`[handleCaptureImageFromCamera] Duplicate detected, skipping: "${imageUri}"`);
+            console.warn(`[handleCaptureImageFromCamera] ❌ SKIPPED duplicate: "${imageUri}"`);
+            console.log(`[handleCaptureImageFromCamera] Array unchanged:`, JSON.stringify(images));
           }
           
           // Save back to form
           handleOnChange(currentQuestion, JSON.stringify(images));
+          console.log(`[handleCaptureImageFromCamera] ========== END ==========`);
         });
       }
     },
