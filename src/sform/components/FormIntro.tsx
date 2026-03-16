@@ -23,6 +23,19 @@ export function FormIntro({
   toTime,
   onStart,
 }: FormIntroProps) {
+  // Parse banner JSON to get imageURL
+  const getBannerUrl = () => {
+    if (!banner) return null;
+    try {
+      const config = JSON.parse(banner);
+      return config?.imageURL || null;
+    } catch {
+      return null;
+    }
+  };
+
+  const bannerUrl = getBannerUrl();
+
   // Format dates
   const formatDate = (date: number | null) => {
     if (!date) return '';
@@ -36,9 +49,9 @@ export function FormIntro({
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
       {/* Banner */}
-      {banner && (
+      {bannerUrl && (
         <Image
-          source={{ uri: banner }}
+          source={{ uri: bannerUrl }}
           style={styles.banner}
           resizeMode="cover"
         />

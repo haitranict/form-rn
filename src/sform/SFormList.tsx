@@ -106,13 +106,23 @@ export function SFormList({
         activeOpacity={0.7}
       >
         {/* Banner Image */}
-        {item.banner && (
-          <Image
-            source={{ uri: item.banner }}
-            style={styles.bannerImage}
-            resizeMode="cover"
-          />
-        )}
+        {(() => {
+          if (!item.banner) return null;
+          try {
+            const config = JSON.parse(item.banner);
+            const imageUrl = config?.imageURL;
+            if (!imageUrl) return null;
+            return (
+              <Image
+                source={{ uri: imageUrl }}
+                style={styles.bannerImage}
+                resizeMode="cover"
+              />
+            );
+          } catch {
+            return null;
+          }
+        })()}
         
         <View style={styles.formItemContent}>
           <View style={styles.formItemHeader}>
