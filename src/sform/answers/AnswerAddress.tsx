@@ -39,11 +39,10 @@ function SearchModal({
 
   return (
     <Modal visible={visible} transparent animationType="slide" onRequestClose={onClose}>
-      <KeyboardAvoidingView 
-        behavior="padding" 
+      <KeyboardAvoidingView
+        behavior="padding"
         style={styles.overlay}
-        keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : -100}
-      >
+        keyboardVerticalOffset={Platform.OS === 'ios' ? 70 : -300}>
         <View style={styles.sheet}>
           <Text style={styles.sheetTitle}>{title}</Text>
           <TextInput
