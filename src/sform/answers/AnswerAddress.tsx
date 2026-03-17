@@ -1,9 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import {
   View, Text, TextInput, TouchableOpacity, Modal, FlatList,
-  StyleSheet, SafeAreaView,
-  KeyboardAvoidingView,
-  Platform,
+  StyleSheet, KeyboardAvoidingView, Platform,
 } from 'react-native';
 import type { Question, AnswerItem, Province, District, Town, Province2025, Ward2025 } from '../types/sform.types';
 
@@ -41,32 +39,34 @@ function SearchModal({
 
   return (
     <Modal visible={visible} transparent animationType="slide" onRequestClose={onClose}>
-      <SafeAreaView style={styles.overlay}>
-        <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={{ flex: 1 }}>
-          <View style={styles.sheet}>
-            <Text style={styles.sheetTitle}>{title}</Text>
-            <TextInput
-              style={styles.search}
-              value={search}
-              onChangeText={setSearch}
-              placeholder="Tìm kiếm..."
-              placeholderTextColor="#9AA0A6"
-            />
-            <FlatList
-              data={filtered as unknown[]}
-              keyExtractor={(_, i) => String(i)}
-              renderItem={({ item }) => (
-                <TouchableOpacity
-                  style={styles.option}
-                  onPress={() => { onSelect(item); onClose(); setSearch(''); }}
-                >
-                  <Text style={styles.optionText}>{(item as Record<string, string>)[labelKey]}</Text>
-                </TouchableOpacity>
-              )}
-            />
-          </View>
-        </KeyboardAvoidingView>
-      </SafeAreaView>
+      <KeyboardAvoidingView 
+        behavior="padding" 
+        style={styles.overlay}
+        keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : -100}
+      >
+        <View style={styles.sheet}>
+          <Text style={styles.sheetTitle}>{title}</Text>
+          <TextInput
+            style={styles.search}
+            value={search}
+            onChangeText={setSearch}
+            placeholder="Tìm kiếm..."
+            placeholderTextColor="#9AA0A6"
+          />
+          <FlatList
+            data={filtered as unknown[]}
+            keyExtractor={(_, i) => String(i)}
+            renderItem={({ item }) => (
+              <TouchableOpacity
+                style={styles.option}
+                onPress={() => { onSelect(item); onClose(); setSearch(''); }}
+              >
+                <Text style={styles.optionText}>{(item as Record<string, string>)[labelKey]}</Text>
+              </TouchableOpacity>
+            )}
+          />
+        </View>
+      </KeyboardAvoidingView>
     </Modal>
   );
 }
