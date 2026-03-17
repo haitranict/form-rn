@@ -42,7 +42,7 @@ function SearchModal({
       <KeyboardAvoidingView
         behavior="padding"
         style={styles.overlay}
-        keyboardVerticalOffset={Platform.OS === 'ios' ? 70 : -300}>
+        keyboardVerticalOffset={Platform.OS === 'ios' ? 70 : 150}>
         <View style={styles.sheet}>
           <Text style={styles.sheetTitle}>{title}</Text>
           <TextInput
