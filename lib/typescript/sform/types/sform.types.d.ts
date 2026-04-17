@@ -174,6 +174,7 @@ export interface FormListItem {
     inApp: number;
     createBy: number | null;
     createDate: string | null;
+    done?: number;
 }
 export interface FormListResponse {
     statusId: number;

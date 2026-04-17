@@ -89,6 +89,14 @@ export function AnswerAudio({ question, onChange, onUpload, onRecord, onPickFrom
 const styles = StyleSheet.create({
   container: { borderWidth: 1, borderColor: '#4285F4', borderRadius: 8, padding: 8, minHeight: 70 },
   audioRow: { flexDirection: 'row', alignItems: 'center', marginBottom: 4 },
+  audioIcon: { fontSize: 18, marginRight: 8 },
+  audioUrl: { flex: 1, fontSize: 13, color: '#5F6368' },
+  actions: { flexDirection: 'row', marginTop: 8, gap: 8 },
+  btn: {
+    flexDirection: 'row', alignItems: 'center',
+    borderWidth: 1, borderColor: '#4285F4', borderRadius: 6,
+    paddingHorizontal: 12, paddingVertical: 6,
+  },
   btnDisabled: {
     borderColor: '#CCCCCC',
     backgroundColor: '#F5F5F5',
@@ -99,13 +107,5 @@ const styles = StyleSheet.create({
   btnText: { fontSize: 14, color: '#202124' },
   btnTextDisabled: {
     color: '#999999',
- p: 8, gap: 8 },
-  btn: {
-    flexDirection: 'row', alignItems: 'center',
-    borderWidth: 1, borderColor: '#4285F4', borderRadius: 6,
-    paddingHorizontal: 12, paddingVertical: 6,
   },
-  clearBtn: { borderColor: '#EA4335' },
-  btnIcon: { fontSize: 16, marginRight: 4 },
-  btnText: { fontSize: 14, color: '#202124' },
 });
