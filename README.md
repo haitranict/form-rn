@@ -28,6 +28,15 @@
 
 ## 📦 Cài đặt
 
+### Từ GitHub (khuyên dùng)
+```bash
+npm install git+https://github.com/haitranict/form-rn.git
+# hoặc
+npm install github:haitranict/form-rn
+# hoặc với yarn
+yarn add git+https://github.com/haitranict/form-rn.git
+```
+
 ### Từ local (development)
 ```bash
 npm install ../path/to/ModuleApp/Form
@@ -105,15 +114,6 @@ export default function MyApp() {
   );
 }
 ```
-
-## 📖 Documentation
-
-- **Authorization**: Xem [AUTHORIZATION.md](AUTHORIZATION.md) - Chi tiết về Authorization header
-- **Navigation**: Xem [NAVIGATION_PARAMS.md](NAVIGATION_PARAMS.md) và [NAVIGATION_EXAMPLE.tsx](NAVIGATION_EXAMPLE.tsx)
-- **Form List**: Xem [FORMLIST_EXAMPLE.md](FORMLIST_EXAMPLE.md)
-- **Form Detail**: Xem [USAGE_EXAMPLE.md](USAGE_EXAMPLE.md)
-- **API Integration**: Xem [API_INTEGRATION_EXAMPLE.tsx](API_INTEGRATION_EXAMPLE.tsx)
-
 ## 🔧 Development
 
 ```bash
