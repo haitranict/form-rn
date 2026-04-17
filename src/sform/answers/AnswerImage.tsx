@@ -80,7 +80,15 @@ export function AnswerImage({ question, onChange, onDelete, onUpload, onPickFrom
     if (raw) images = JSON.parse(raw);
   } catch { /* ignore */ }
 
+  // Check max limit
+  const max = question.max ? Number(question.max) : 0;
+  const isMaxReached = max > 0 && images.length >= max;
+
   const handlePickFromGallery = () => {
+    if (isMaxReached) {
+      Alert.alert('Giới hạn', `Đã đạt giới hạn tối đa ${max} ảnh. Vui lòng xóa ảnh cũ trước khi thêm ảnh mới.`);
+      return;
+    }
     if (onPickFromGallery) {
       onPickFromGallery(question);
     } else {
@@ -89,6 +97,10 @@ export function AnswerImage({ question, onChange, onDelete, onUpload, onPickFrom
   };
 
   const handleCaptureFromCamera = () => {
+    if (isMaxReached) {
+      Alert.alert('Giới hạn', `Đã đạt giới hạn tối đa ${max} ảnh. Vui lòng xóa ảnh cũ trước khi chụp ảnh mới.`);
+      return;
+    }
     if (onCaptureFromCamera) {
       onCaptureFromCamera(question);
     } else {
@@ -141,20 +153,22 @@ export function AnswerImage({ question, onChange, onDelete, onUpload, onPickFrom
       )}
       <View style={styles.actions}>
         <TouchableOpacity 
-          style={styles.btn} 
+          style={[styles.btn, isMaxReached && styles.btnDisabled]} 
           onPress={handlePickFromGallery}
           activeOpacity={0.7}
+          disabled={isMaxReached}
         >
           <Text style={styles.btnIcon}>🖼</Text>
-          <Text style={styles.btnText}>Thư viện</Text>
+          <Text style={[styles.btnText, isMaxReached && styles.btnTextDisabled]}>Thư viện</Text>
         </TouchableOpacity>
         <TouchableOpacity 
-          style={styles.btn} 
+          style={[styles.btn, isMaxReached && styles.btnDisabled]} 
           onPress={handleCaptureFromCamera}
           activeOpacity={0.7}
+          disabled={isMaxReached}
         >
           <Text style={styles.btnIcon}>📷</Text>
-          <Text style={styles.btnText}>Chụp ảnh</Text>
+          <Text style={[styles.btnText, isMaxReached && styles.btnTextDisabled]}>Chụp ảnh</Text>
         </TouchableOpacity>
         {images.length > 0 && (
           <TouchableOpacity 
@@ -262,6 +276,11 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
     backgroundColor: '#fff',
   },
+  btnDisabled: {
+    borderColor: '#CCCCCC',
+    backgroundColor: '#F5F5F5',
+    opacity: 0.6,
+  },
   clearBtn: { 
     borderColor: '#EA4335',
     backgroundColor: '#FFF5F5',
@@ -274,6 +293,9 @@ const styles = StyleSheet.create({
     fontSize: 14, 
     color: '#202124',
     fontWeight: '500',
+  },
+  btnTextDisabled: {
+    color: '#999999',
   },
   clearBtnText: {
     color: '#EA4335',

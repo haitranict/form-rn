@@ -55,6 +55,14 @@ function SearchModal({
           <FlatList
             data={filtered as unknown[]}
             keyExtractor={(_, i) => String(i)}
+            ListFooterComponent={<View>
+              <Text style={{ textAlign: 'center', color: '#9AA0A6', padding: 10 }}>Đã xem hết</Text>
+            </View>}
+            ListEmptyComponent={<View>
+              <Text style={{ textAlign: 'center', color: '#9AA0A6', padding: 12 }}>Không có kết quả</Text>
+            </View>}
+            ListHeaderComponent={<View>
+            </View>}
             renderItem={({ item }) => (
               <TouchableOpacity
                 style={styles.option}

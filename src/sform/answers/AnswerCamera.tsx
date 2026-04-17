@@ -79,7 +79,15 @@ export function AnswerCamera({ question, cameraImages, onCapture, onDelete, onCa
     ? images 
     : cameraImages.filter((img) => img.questionId === question.questionId).map(img => img.imageData);
 
+  // Check max limit
+  const max = question.max ? Number(question.max) : 0;
+  const isMaxReached = max > 0 && myImages.length >= max;
+
   const handleCameraCapture = () => {
+    if (isMaxReached) {
+      Alert.alert('Giới hạn', `Đã đạt giới hạn tối đa ${max} ảnh. Vui lòng xóa ảnh cũ trước khi chụp ảnh mới.`);
+      return;
+    }
     if (onCameraCapture) {
       onCameraCapture(question);
     } else {
@@ -142,9 +150,14 @@ export function AnswerCamera({ question, cameraImages, onCapture, onDelete, onCa
           })}
         </ScrollView>
       )}
-      <TouchableOpacity style={styles.cameraBtn} onPress={handleCameraCapture} activeOpacity={0.7}>
+      <TouchableOpacity 
+        style={[styles.cameraBtn, isMaxReached && styles.cameraBtnDisabled]} 
+        onPress={handleCameraCapture} 
+        activeOpacity={0.7}
+        disabled={isMaxReached}
+      >
         <Text style={styles.cameraIcon}>📷</Text>
-        <Text style={styles.cameraText}>Chụp ảnh</Text>
+        <Text style={[styles.cameraText, isMaxReached && styles.cameraTextDisabled]}>Chụp ảnh</Text>
       </TouchableOpacity>
     </View>
   );
@@ -203,6 +216,14 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16, paddingVertical: 10, alignSelf: 'flex-start',
     backgroundColor: '#f8f9fa',
   },
+  cameraBtnDisabled: {
+    borderColor: '#CCCCCC',
+    backgroundColor: '#F5F5F5',
+    opacity: 0.6,
+  },
   cameraIcon: { fontSize: 20, marginRight: 8 },
   cameraText: { fontSize: 15, color: '#202124', fontWeight: '500' },
+  cameraTextDisabled: {
+    color: '#999999',
+  },
 });
