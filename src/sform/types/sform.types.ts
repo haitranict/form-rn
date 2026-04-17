@@ -238,6 +238,7 @@ export interface FormListItem {
   inApp: number;             // 0 = web only, 1 = in app
   createBy: number | null;
   createDate: string | null;
+  done?: number;             // Số lần đã làm form này (0 = chưa làm, > 0 = đã làm)
 }
 
 // Response wrapper

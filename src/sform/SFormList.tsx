@@ -93,7 +93,7 @@ export function SFormList({
 
   const renderFormItem = ({ item }: { item: FormListItem }) => {
     const isExpired = item.toDate ? item.toDate < parseInt(moment().format('YYYYMMDD'), 10) : false;
-    const isCompleted = false; // Mặc định chưa làm (theo yêu cầu)
+    const isCompleted = (item.done ?? 0) > 0; // Đã làm nếu done > 0
 
     return (
       <TouchableOpacity
@@ -135,7 +135,9 @@ export function SFormList({
             </Text>
             {isCompleted && (
               <View style={styles.completedBadge}>
-                <Text style={styles.completedText}>✓ Đã làm</Text>
+                <Text style={styles.completedText}>
+                  ✓ Đã làm {item.done && item.done > 1 ? `(${item.done})` : ''}
+                </Text>
               </View>
             )}
             {!isCompleted && isExpired && (
