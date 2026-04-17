@@ -251,6 +251,24 @@ export function SFormResult({
   );
 
   // ============================================================
+  // Helper: Normalize Upload URL
+  // Fix URL thiếu dấu / giữa uploaded và thư mục ngày
+  // Từ: https://xxx.com/uploaded20260417/file.jpg
+  // Thành: https://xxx.com/uploaded/20260417/file.jpg
+  // ============================================================
+  const normalizeUploadUrl = useCallback((url: string): string => {
+    const match = url.match(/(\/uploaded)(\d{8}\/)/);
+    if (match) {
+      const fixed = url.replace(match[0], `${match[1]}/${match[2]}`);
+      if (fixed !== url) {
+        console.log('[URL Fix]', url, '→', fixed);
+      }
+      return fixed;
+    }
+    return url;
+  }, []);
+
+  // ============================================================
   // Upload Images
   // ============================================================
   const handleUploadImages = useCallback(
@@ -261,7 +279,9 @@ export function SFormResult({
       if (files.length === 0) return;
       try {
         const results = await apiUploadImages(apiConfig, files);
-        const urls = results.filter((r) => r.message === 'Successful').map((r) => r.fileUrl);
+        const urls = results
+          .filter((r) => r.message === 'Successful')
+          .map((r) => normalizeUploadUrl(r.fileUrl));
         if (urls.length > 0) {
           handleOnChange(question, JSON.stringify(urls));
         }
@@ -269,7 +289,7 @@ export function SFormResult({
         showError('Upload ảnh thất bại. Vui lòng thử lại.');
       }
     },
-    [apiConfig, handleOnChange, showError]
+    [apiConfig, handleOnChange, showError, normalizeUploadUrl]
   );
 
   // ============================================================
@@ -283,7 +303,9 @@ export function SFormResult({
       if (files.length === 0) return;
       try {
         const results = await apiUploadAudio(apiConfig, files);
-        const urls = results.filter((r) => r.message === 'Successful').map((r) => r.fileUrl);
+        const urls = results
+          .filter((r) => r.message === 'Successful')
+          .map((r) => normalizeUploadUrl(r.fileUrl));
         if (urls.length > 0) {
           handleOnChange(question, JSON.stringify(urls));
         }
@@ -291,7 +313,7 @@ export function SFormResult({
         showError('Upload audio thất bại. Vui lòng thử lại.');
       }
     },
-    [apiConfig, handleOnChange, showError]
+    [apiConfig, handleOnChange, showError, normalizeUploadUrl]
   );
 
   // ============================================================
@@ -323,13 +345,12 @@ export function SFormResult({
       if (onPickImageFromGallery) {
         onPickImageFromGallery(question.questionId, (imageUri: string) => {
           console.log(`[handlePickImageFromGallery] Received new image: "${imageUri}"`);
-          // Send only the new image URI as array with 1 item
-          // useSFormHandlers will handle duplicate detection and merging
-          handleOnChange(question, JSON.stringify([imageUri]));
+          const normalizedUri = normalizeUploadUrl(imageUri);
+          handleOnChange(question, JSON.stringify([normalizedUri]));
         });
       }
     },
-    [onPickImageFromGallery, handleOnChange]
+    [onPickImageFromGallery, handleOnChange, normalizeUploadUrl]
   );
 
   const handleCaptureImageFromCamera = useCallback(
@@ -337,13 +358,12 @@ export function SFormResult({
       if (onCaptureImageFromCamera) {
         onCaptureImageFromCamera(question.questionId, (imageUri: string) => {
           console.log(`[handleCaptureImageFromCamera] Received new image: "${imageUri}"`);
-          // Send only the new image URI as array with 1 item
-          // useSFormHandlers will handle duplicate detection and merging
-          handleOnChange(question, JSON.stringify([imageUri]));
+          const normalizedUri = normalizeUploadUrl(imageUri);
+          handleOnChange(question, JSON.stringify([normalizedUri]));
         });
       }
     },
-    [onCaptureImageFromCamera, handleOnChange]
+    [onCaptureImageFromCamera, handleOnChange, normalizeUploadUrl]
   );
 
   // ============================================================
@@ -354,13 +374,12 @@ export function SFormResult({
       if (onRecordAudio) {
         onRecordAudio(question.questionId, (audioUri: string) => {
           console.log(`[handleRecordAudio] Received new audio: "${audioUri}"`);
-          // Send only the new audio URI as array with 1 item
-          // useSFormHandlers will handle duplicate detection and merging
-          handleOnChange(question, JSON.stringify([audioUri]));
+          const normalizedUri = normalizeUploadUrl(audioUri);
+          handleOnChange(question, JSON.stringify([normalizedUri]));
         });
       }
     },
-    [onRecordAudio, handleOnChange]
+    [onRecordAudio, handleOnChange, normalizeUploadUrl]
   );
 
   const handlePickAudioFromFiles = useCallback(
@@ -368,13 +387,12 @@ export function SFormResult({
       if (onPickAudioFromFiles) {
         onPickAudioFromFiles(question.questionId, (audioUri: string) => {
           console.log(`[handlePickAudioFromFiles] Received new audio: "${audioUri}"`);
-          // Send only the new audio URI as array with 1 item
-          // useSFormHandlers will handle duplicate detection and merging
-          handleOnChange(question, JSON.stringify([audioUri]));
+          const normalizedUri = normalizeUploadUrl(audioUri);
+          handleOnChange(question, JSON.stringify([normalizedUri]));
         });
       }
     },
-    [onPickAudioFromFiles, handleOnChange]
+    [onPickAudioFromFiles, handleOnChange, normalizeUploadUrl]
   );
 
   // ============================================================
