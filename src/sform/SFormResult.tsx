@@ -257,9 +257,10 @@ export function SFormResult({
   // Thành: https://xxx.com/uploaded/20260417/file.jpg
   // ============================================================
   const normalizeUploadUrl = useCallback((url: string): string => {
-    const match = url.match(/(\/uploaded)(\d{8}\/)/);
+    // Pattern: /uploadedYYYYMMDD/ → /uploaded/YYYYMMDD/
+    const match = url.match(/\/uploaded(\d{8})\//);
     if (match) {
-      const fixed = url.replace(match[0], `${match[1]}/${match[2]}`);
+      const fixed = url.replace(/\/uploaded(\d{8})\//, '/uploaded/$1/');
       if (fixed !== url) {
         console.log('[URL Fix]', url, '→', fixed);
       }
