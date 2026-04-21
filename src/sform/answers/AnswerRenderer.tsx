@@ -124,6 +124,8 @@ export function AnswerRenderer({
           cameraImages={cameraImages}
           onCapture={() => onCapture(question)}
           onDelete={onDeleteCameraImage}
+          onChange={(q, v) => onChange(q, v)}
+          onDeleteUploadedImage={onDeleteUploadedImage}
           onCameraCapture={onCaptureImageFromCamera}
           filesBasePath={filesBasePath}
         />

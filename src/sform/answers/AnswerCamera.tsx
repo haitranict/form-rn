@@ -15,6 +15,8 @@ interface Props {
   cameraImages: CameraImage[];
   onCapture: () => void;
   onDelete: (index: number) => void;
+  onChange?: (question: Question, value: string) => void;
+  onDeleteUploadedImage?: (questionId: number, url: string) => void;
   onCameraCapture?: (question: Question) => void;
   /** Base path for files directory in app (e.g., file:///data/user/0/com.app/files) */
   filesBasePath?: string;
@@ -66,7 +68,7 @@ function normalizeImageUri(uri: string, basePath?: string): string {
   return uri;
 }
 
-export function AnswerCamera({ question, cameraImages, onCapture, onDelete, onCameraCapture, filesBasePath }: Props) {
+export function AnswerCamera({ question, cameraImages, onCapture, onDelete, onChange, onDeleteUploadedImage, onCameraCapture, filesBasePath }: Props) {
   // Try to get images from question.anwserItem first (new callback pattern)
   const raw = question.anwserItem[0].anwserValue;
   let images: string[] = [];
@@ -96,9 +98,11 @@ export function AnswerCamera({ question, cameraImages, onCapture, onDelete, onCa
   };
 
   const handleClear = () => {
-    // For new pattern, we don't have onChange here, so just alert
-    // User should use AnswerImage component with onChange if they want clear functionality
-    Alert.alert('Xoá ảnh', 'Vui lòng sử dụng nút xoá từng ảnh');
+    if (onChange) {
+      onChange(question, 'clear');
+    } else {
+      Alert.alert('Xoá ảnh', 'Vui lòng sử dụng nút xoá từng ảnh');
+    }
   };
 
   return (
@@ -128,10 +132,13 @@ export function AnswerCamera({ question, cameraImages, onCapture, onDelete, onCa
                 <TouchableOpacity
                   style={styles.deleteBtn}
                   onPress={() => {
-                    // For new pattern, use index; for old pattern use image index
+                    // For new pattern (callback pattern with onChange)
                     if (images.length > 0) {
-                      // New pattern - cannot delete here without onChange callback
-                      Alert.alert('Xoá ảnh', 'Tính năng xoá chưa được hỗ trợ cho camera-only type. Vui lòng sử dụng Image type.');
+                      if (onDeleteUploadedImage) {
+                        onDeleteUploadedImage(question.questionId, url);
+                      } else {
+                        Alert.alert('Xoá ảnh', 'Tính năng xoá chưa được cấu hình. Vui lòng liên hệ developer.');
+                      }
                     } else {
                       // Old pattern
                       const imgObj = cameraImages.find(img => img.imageData === url);
