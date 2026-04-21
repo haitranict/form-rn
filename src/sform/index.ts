@@ -2,7 +2,7 @@
 export { SFormResult } from './SFormResult';
 export type { SFormResultProps } from './SFormResult';
 export { SFormList } from './SFormList';
-export type { SFormListProps } from './SFormList';
+export type { SFormListProps, SFormListRef } from './SFormList';
 
 // Types
 export type {

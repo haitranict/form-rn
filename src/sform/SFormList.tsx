@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useImperativeHandle, forwardRef } from 'react';
 import {
   View,
   Text,
@@ -14,8 +14,58 @@ import moment from 'moment';
 import { apiGetFormList, type SFormApiConfig } from './hooks/useSFormApi';
 import type { FormListItem } from './types/sform.types';
 
+/**
+ * SFormList - Danh sách các form khảo sát
+ * 
+ * ## Auto-refresh sau khi submit form:
+ * 
+ * ### Cách 1: Sử dụng ref (Recommended)
+ * ```tsx
+ * const listRef = useRef<SFormListRef>(null);
+ * 
+ * <SFormList
+ *   ref={listRef}
+ *   shopId={shopId}
+ *   apiConfig={apiConfig}
+ *   onSelectForm={(formKey, shopId, item) => {
+ *     navigation.navigate('FormResult', { formKey, shopId });
+ *   }}
+ * />
+ * 
+ * // Trong screen FormResult, sau khi submit thành công:
+ * <SFormResult
+ *   onSubmitSuccess={() => {
+ *     // Refresh list khi quay lại
+ *     navigation.goBack();
+ *   }}
+ * />
+ * 
+ * // Trong screen List, dùng focus listener:
+ * useFocusEffect(
+ *   useCallback(() => {
+ *     listRef.current?.refresh();
+ *   }, [])
+ * );
+ * ```
+ * 
+ * ### Cách 2: Sử dụng refreshTrigger
+ * ```tsx
+ * const [refreshTrigger, setRefreshTrigger] = useState(0);
+ * 
+ * <SFormList
+ *   shopId={shopId}
+ *   apiConfig={apiConfig}
+ *   refreshTrigger={refreshTrigger}
+ *   onSelectForm={...}
+ * />
+ * 
+ * // Sau khi submit thành công:
+ * setRefreshTrigger(prev => prev + 1);
+ * ```
+ */
+
 // ============================================================
-// Props
+// Props & Ref
 // ============================================================
 
 export interface SFormListProps {
@@ -29,19 +79,27 @@ export interface SFormListProps {
   emptyMessage?: string;
   /** Custom style */
   style?: ViewStyle;
+  /** Trigger để refresh list (tăng số này lên để refresh) */
+  refreshTrigger?: number;
+}
+
+export interface SFormListRef {
+  /** Refresh danh sách form */
+  refresh: () => void;
 }
 
 // ============================================================
 // Main Component
 // ============================================================
 
-export function SFormList({
+export const SFormList = forwardRef<SFormListRef, SFormListProps>(({
   shopId,
   apiConfig,
   onSelectForm,
   emptyMessage = 'Không có form khảo sát nào',
   style,
-}: SFormListProps) {
+  refreshTrigger,
+}, ref) => {
   const [loading, setLoading] = useState(true);
   const [forms, setForms] = useState<FormListItem[]>([]);
   const [error, setError] = useState<string | null>(null);
@@ -49,7 +107,7 @@ export function SFormList({
   useEffect(() => {
     loadForms();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [shopId]);
+  }, [shopId, refreshTrigger]);
 
   const loadForms = async () => {
     setLoading(true);
@@ -90,6 +148,11 @@ export function SFormList({
   const handleSelectForm = (item: FormListItem) => {
     onSelectForm(item.accessKey, shopId, item);
   };
+
+  // Expose refresh method via ref
+  useImperativeHandle(ref, () => ({
+    refresh: loadForms,
+  }));
 
   const renderFormItem = ({ item }: { item: FormListItem }) => {
     const isExpired = item.toDate ? item.toDate < parseInt(moment().format('YYYYMMDD'), 10) : false;
@@ -220,7 +283,7 @@ export function SFormList({
       />
     </View>
   );
-}
+});
 
 // ============================================================
 // Styles
