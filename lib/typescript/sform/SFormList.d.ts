@@ -5,10 +5,11 @@ import type { FormListItem } from './types/sform.types';
 /**
  * SFormList - Danh sách các form khảo sát
  *
- * ## Auto-refresh sau khi submit form:
+ * ## Cập nhật số lần đã làm sau khi submit form:
  *
- * ### Cách 1: Sử dụng ref (Recommended)
+ * ### Cách 1: Update trực tiếp state (Recommended - Không cần fetch API)
  * ```tsx
+ * // Screen List
  * const listRef = useRef<SFormListRef>(null);
  *
  * <SFormList
@@ -16,39 +17,36 @@ import type { FormListItem } from './types/sform.types';
  *   shopId={shopId}
  *   apiConfig={apiConfig}
  *   onSelectForm={(formKey, shopId, item) => {
- *     navigation.navigate('FormResult', { formKey, shopId });
+ *     navigation.navigate('FormResult', {
+ *       formKey,
+ *       shopId,
+ *       onSuccess: () => {
+ *         // Update số lần đã làm khi submit thành công
+ *         listRef.current?.updateFormDoneCount(formKey);
+ *       }
+ *     });
  *   }}
  * />
  *
- * // Trong screen FormResult, sau khi submit thành công:
+ * // Screen FormResult
  * <SFormResult
+ *   formKey={formKey}
  *   onSubmitSuccess={() => {
- *     // Refresh list khi quay lại
+ *     route.params?.onSuccess?.(); // Gọi callback để update list
  *     navigation.goBack();
  *   }}
  * />
+ * ```
  *
- * // Trong screen List, dùng focus listener:
+ * ### Cách 2: Refresh toàn bộ list (Fetch API lại)
+ * ```tsx
+ * const listRef = useRef<SFormListRef>(null);
+ *
  * useFocusEffect(
  *   useCallback(() => {
  *     listRef.current?.refresh();
  *   }, [])
  * );
- * ```
- *
- * ### Cách 2: Sử dụng refreshTrigger
- * ```tsx
- * const [refreshTrigger, setRefreshTrigger] = useState(0);
- *
- * <SFormList
- *   shopId={shopId}
- *   apiConfig={apiConfig}
- *   refreshTrigger={refreshTrigger}
- *   onSelectForm={...}
- * />
- *
- * // Sau khi submit thành công:
- * setRefreshTrigger(prev => prev + 1);
  * ```
  */
 export interface SFormListProps {
@@ -66,8 +64,10 @@ export interface SFormListProps {
     refreshTrigger?: number;
 }
 export interface SFormListRef {
-    /** Refresh danh sách form */
+    /** Refresh danh sách form (fetch API lại) */
     refresh: () => void;
+    /** Cập nhật số lần đã làm cho 1 form cụ thể (không cần fetch API) */
+    updateFormDoneCount: (formKey: string) => void;
 }
 export declare const SFormList: React.ForwardRefExoticComponent<SFormListProps & React.RefAttributes<SFormListRef>>;
 //# sourceMappingURL=SFormList.d.ts.map

@@ -11,8 +11,8 @@ export interface SFormResultProps {
     formKey?: string;
     /** ShopId từ list */
     shopId?: number;
-    /** Callback sau khi submit thành công */
-    onSubmitSuccess?: (resultId: number) => void;
+    /** Callback sau khi submit thành công - trả về resultId và formKey để update list */
+    onSubmitSuccess?: (resultId: number, formKey: string) => void;
     /** Callback khi submit thất bại */
     onSubmitError?: (message: string) => void;
     /** View mode - chỉ xem, không submit */
