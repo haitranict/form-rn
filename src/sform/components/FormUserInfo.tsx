@@ -13,6 +13,7 @@ interface Props {
   selectedShop: Shop | null;
   onSelectEmployee: (emp: Employee) => void;
   onSelectShop: (shop: Shop) => void;
+  hasPropShopId?: boolean;
 }
 
 export function FormUserInfo({
@@ -23,14 +24,16 @@ export function FormUserInfo({
   selectedShop,
   onSelectEmployee,
   onSelectShop,
+  hasPropShopId = false,
 }: Props) {
   const [showEmp, setShowEmp] = useState(false);
   const [showShop, setShowShop] = useState(false);
   const [empSearch, setEmpSearch] = useState('');
   const [shopSearch, setShopSearch] = useState('');
 
-  const showEmployees = formData.usedEmployees && employees.length > 0;
-  const showShops = formData.usedStores && shops.length > 0;
+  const isUseShop = Boolean(formData.usedStores ?? formData.useshop ?? formData.useShop);
+  const showEmployees = Boolean(formData.usedEmployees && employees.length > 0);
+  const showShops = !hasPropShopId && isUseShop && shops.length > 0;
 
   if (!showEmployees && !showShops) return null;
 

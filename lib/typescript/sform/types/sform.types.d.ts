@@ -68,6 +68,8 @@ export interface SFormData {
     formData: string;
     usedEmployees: boolean | null;
     usedStores: boolean | null;
+    useshop?: boolean | null;
+    useShop?: boolean | null;
     toDate: number | null;
     fromDate: number | null;
     fromTime: string | null;

@@ -115,6 +115,8 @@ export interface SFormData {
   formData: string;            // JSON string of Question[]
   usedEmployees: boolean | null;
   usedStores: boolean | null;
+  useshop?: boolean | null;
+  useShop?: boolean | null;
   toDate: number | null;       // YYYYMMDD format
   fromDate: number | null;
   fromTime: string | null;

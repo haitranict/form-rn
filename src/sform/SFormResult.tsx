@@ -155,6 +155,7 @@ export function SFormResult({
     selectedShop: state.selectedShop,
     imageQuestion: state.imageQuestion,
     onError: showError,
+    shopId,
   });
 
   // ============================================================
@@ -200,8 +201,10 @@ export function SFormResult({
 
         initForm(result, employees, []);
 
-        // Load shops nếu cần
-        if (result.usedStores === true) {
+        // Load shops: chỉ load khi KHÔNG có shopId từ props và form có cấu hình useshop / usedStores
+        const hasPropShopId = typeof shopId === 'number' && shopId > 0;
+        const isUseShop = Boolean(result.usedStores ?? (result as any).useshop ?? (result as any).useShop);
+        if (!hasPropShopId && isUseShop) {
           const empId = result.createBy && result.createBy > 0 ? result.createBy : 0;
           apiGetShops(apiConfig, {
             accountId: result.accountId,
@@ -238,7 +241,9 @@ export function SFormResult({
   const handleSelectEmployee = useCallback(
     (employee: Employee) => {
       setSelectedEmployee(employee);
-      if (employee.Id > 0 && state.formData) {
+      const hasPropShopId = typeof shopId === 'number' && shopId > 0;
+      const isUseShop = Boolean(state.formData?.usedStores ?? (state.formData as any)?.useshop ?? (state.formData as any)?.useShop);
+      if (!hasPropShopId && isUseShop && employee.Id > 0 && state.formData) {
         apiGetShops(apiConfig, {
           accountId: state.formData.accountId,
           employeeId: employee.Id,
@@ -247,7 +252,7 @@ export function SFormResult({
           .catch(() => { /* ignore */ });
       }
     },
-    [apiConfig, setSelectedEmployee, setShops, state.formData]
+    [apiConfig, setSelectedEmployee, setShops, state.formData, shopId]
   );
 
   // ============================================================
@@ -682,6 +687,7 @@ export function SFormResult({
           selectedShop={state.selectedShop}
           onSelectEmployee={handleSelectEmployee}
           onSelectShop={setSelectedShop}
+          hasPropShopId={typeof shopId === 'number' && shopId > 0}
         />
 
         {questionsToDisplay.map((question) => {

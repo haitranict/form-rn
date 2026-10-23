@@ -20,6 +20,7 @@ interface ValidationOptions {
   selectedShop: Shop | null;
   imageQuestion: { index: number; questionId: number; imageData: string }[];
   onError: (msg: string) => void;
+  shopId?: number;
 }
 
 interface ValidationResult {
@@ -39,6 +40,7 @@ export function useSFormValidation({
   selectedShop,
   imageQuestion,
   onError,
+  shopId,
 }: ValidationOptions) {
   const validate = useCallback((): ValidationResult => {
     if (!formData) return { isValid: false, payload: null };
@@ -278,7 +280,11 @@ export function useSFormValidation({
     }
 
     // ---- Kiểm tra Shop ----
-    if (formData.usedStores) {
+    const hasPropShopId = typeof shopId === 'number' && shopId > 0;
+    const finalShopId = hasPropShopId ? shopId : (selectedShop?.shopId || 0);
+    const isUseShop = Boolean(formData.usedStores ?? formData.useshop ?? formData.useShop);
+
+    if (!hasPropShopId && isUseShop) {
       if (!selectedShop || selectedShop.shopId <= 0) {
         onError('Bạn chưa chọn cửa hàng');
         return { isValid: false, payload: null };
@@ -287,7 +293,7 @@ export function useSFormValidation({
 
     // ---- Build payload matching backend spiralFormModel ----
     const payload: import('../types/sform.types').InsertResultPayload = {
-      shopId: selectedShop?.shopId || 0,
+      shopId: finalShopId,
       formDate: parseInt(moment().format('YYYYMMDD'), 10),
       publicKey: formData.accessKey || '',
       spiralData: JSON.stringify(questions),
@@ -303,6 +309,7 @@ export function useSFormValidation({
     selectedShop,
     imageQuestion,
     onError,
+    shopId,
   ]);
 
   return { validate };

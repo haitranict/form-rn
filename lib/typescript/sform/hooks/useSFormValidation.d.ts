@@ -10,13 +10,14 @@ interface ValidationOptions {
         imageData: string;
     }[];
     onError: (msg: string) => void;
+    shopId?: number;
 }
 interface ValidationResult {
     isValid: boolean;
     /** Payload khớp với backend spiralFormModel */
     payload: import('../types/sform.types').InsertResultPayload | null;
 }
-export declare function useSFormValidation({ formData, checkList, selectedEmployee, selectedShop, imageQuestion, onError, }: ValidationOptions): {
+export declare function useSFormValidation({ formData, checkList, selectedEmployee, selectedShop, imageQuestion, onError, shopId, }: ValidationOptions): {
     validate: () => ValidationResult;
 };
 export {};

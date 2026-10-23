@@ -8,7 +8,8 @@ interface Props {
     selectedShop: Shop | null;
     onSelectEmployee: (emp: Employee) => void;
     onSelectShop: (shop: Shop) => void;
+    hasPropShopId?: boolean;
 }
-export declare function FormUserInfo({ formData, employees, shops, selectedEmployee, selectedShop, onSelectEmployee, onSelectShop, }: Props): React.JSX.Element | null;
+export declare function FormUserInfo({ formData, employees, shops, selectedEmployee, selectedShop, onSelectEmployee, onSelectShop, hasPropShopId, }: Props): React.JSX.Element | null;
 export {};
 //# sourceMappingURL=FormUserInfo.d.ts.map
