@@ -82,24 +82,17 @@ export function FormIntro({
         />
       )}
 
-      {/* Lock or Done notice */}
-      {locked ? (
-        <View style={styles.lockedContainer}>
-          <Text style={styles.lockedText}>
-            🔒 Khảo sát đã bị khoá. Bạn chỉ có thể xem lại, không thể chỉnh sửa hoặc gửi.
-          </Text>
-        </View>
-      ) : isDone ? (
-        <View style={styles.doneContainer}>
-          <Text style={styles.doneText}>
-            ✓ Khảo sát đã hoàn thành. Bạn có thể xem lại nội dung đã thực hiện.
-          </Text>
-        </View>
-      ) : null}
-
-      {/* Title */}
+      {/* Title with status styling */}
       <View style={styles.titleContainer}>
-        <Text style={styles.title}>{title}</Text>
+        <Text
+          style={[
+            styles.title,
+            locked && styles.titleLocked,
+            !locked && isDone && styles.titleDone,
+          ]}
+        >
+          {title}
+        </Text>
       </View>
 
       {/* Subtitle */}
@@ -204,8 +197,14 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 24,
     fontWeight: 'bold',
-    color: '#333',
+    color: '#202124',
     textAlign: 'center',
+  },
+  titleLocked: {
+    color: '#D32F2F',
+  },
+  titleDone: {
+    color: '#2E7D32',
   },
   subtitleContainer: {
     padding: 20,

@@ -1,6 +1,6 @@
 {
   "name": "@spiral/rn-form",
-  "version": "1.0.6",
+  "version": "1.0.7",
   "description": "A Google Form-like library for React Native",
   "main": "lib/commonjs/index.js",
   "module": "lib/module/index.js",
@@ -38,7 +38,7 @@
   },
   "dependencies": {
     "@react-native-community/datetimepicker": "^7.0.0",
-    "@spiral/rn-form": "github:haitranict/form-rn",
+    "@spiral/rn-form": "github:haitranict/form-rn#v1.0.6",
     "moment": "^2.29.4",
     "react-native-gesture-handler": "^2.0.0"
   },

@@ -226,42 +226,11 @@ export const SFormList = forwardRef<SFormListRef, SFormListProps>(({
         })()}
         
         <View style={styles.formItemContent}>
-          {/* Nhãn Đã khoá hiển thị ở vị trí riêng (không chiếm chỗ số lần làm) */}
-          {isItemLocked && (
-            <View style={styles.lockedTagContainer}>
-              <View style={styles.lockedTag}>
-                <Text style={styles.lockedTagText}>🔒 ĐÃ KHOÁ</Text>
-              </View>
-            </View>
-          )}
-
-          <View style={styles.formItemHeader}>
-            <Text style={styles.formName} numberOfLines={2}>
-              {item.title}
-            </Text>
-
-            {/* Vị trí bên phải vẫn giữ nguyên hiển thị số lần làm */}
-            {isCompleted && (
-              <View style={styles.completedBadge}>
-                <Text style={styles.completedText}>
-                  ✓ Đã làm ({doneCount})
-                </Text>
-              </View>
-            )}
-            {!isCompleted && isExpired && (
-              <View style={styles.expiredBadge}>
-                <Text style={styles.expiredText}>Hết hạn</Text>
-              </View>
-            )}
-            {!isCompleted && !isExpired && (
-              <View style={styles.pendingBadge}>
-                <Text style={styles.pendingText}>Chưa làm</Text>
-              </View>
-            )}
-          </View>
+          {/* Tiêu đề hiển thị đầy đủ, không giới hạn dòng */}
+          <Text style={styles.formName}>{item.title}</Text>
 
           {item.subTitle && (
-            <Text style={styles.description} numberOfLines={3}>
+            <Text style={styles.description}>
               {item.subTitle}
             </Text>
           )}
@@ -280,6 +249,32 @@ export const SFormList = forwardRef<SFormListRef, SFormListProps>(({
               )}
             </View>
           )}
+
+          {/* Các trạng thái bố trí chung 1 hàng dưới cùng */}
+          <View style={styles.bottomStatusRow}>
+            {isItemLocked && (
+              <View style={styles.lockedBadge}>
+                <Text style={styles.lockedText}>🔒 Đã khoá</Text>
+              </View>
+            )}
+            {isCompleted && (
+              <View style={styles.completedBadge}>
+                <Text style={styles.completedText}>
+                  ✓ Đã làm ({doneCount})
+                </Text>
+              </View>
+            )}
+            {!isCompleted && isExpired && (
+              <View style={styles.expiredBadge}>
+                <Text style={styles.expiredText}>Hết hạn</Text>
+              </View>
+            )}
+            {!isCompleted && !isExpired && (
+              <View style={styles.pendingBadge}>
+                <Text style={styles.pendingText}>Chưa làm</Text>
+              </View>
+            )}
+          </View>
         </View>
       </TouchableOpacity>
     );
@@ -429,29 +424,35 @@ const styles = StyleSheet.create({
   formItemContent: {
     padding: 16,
   },
-  formItemHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'flex-start',
-    marginBottom: 8,
-  },
   formName: {
-    flex: 1,
     fontSize: 17,
     fontWeight: '700',
     color: '#202124',
-    marginRight: 8,
+    lineHeight: 24,
+    marginBottom: 8,
+  },
+  bottomStatusRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8,
+    alignItems: 'center',
+    marginTop: 10,
+    paddingTop: 10,
+    borderTopWidth: 1,
+    borderTopColor: '#F1F3F4',
   },
   lockedBadge: {
     backgroundColor: '#FDECEA',
     paddingHorizontal: 10,
     paddingVertical: 4,
     borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#F5C2C7',
   },
   lockedText: {
     fontSize: 12,
-    fontWeight: '600',
-    color: '#C5221F',
+    fontWeight: '700',
+    color: '#D32F2F',
   },
   completedBadge: {
     backgroundColor: '#E8F5E9',

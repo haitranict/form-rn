@@ -145,7 +145,7 @@ export function QuestionItem({
       {/* Answer */}
       <View
         style={[styles.answerContainer, readOnly && styles.answerReadOnly]}
-        pointerEvents={readOnly ? 'none' : 'auto'}
+        pointerEvents={readOnly ? (ansType === 10 ? 'auto' : 'none') : 'auto'}
       >
         <AnswerRenderer
           question={question}
@@ -164,6 +164,7 @@ export function QuestionItem({
           onPickAudioFromFiles={onPickAudioFromFiles}
           filesBasePath={filesBasePath}
           dvhc2025={dvhc2025}
+          readOnly={readOnly}
           onChange={onChange}
         />
       </View>

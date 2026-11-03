@@ -12,9 +12,11 @@ interface Props {
     question: Question,
     value: { cellId: string; cellValue: unknown }
   ) => void;
+  /** Chỉ xem (form bị khoá) → không sửa được dữ liệu nhưng vẫn đổi cách hiển thị và cuộn xem được */
+  readOnly?: boolean;
 }
 
-export function AnswerGrid({ question, onChange }: Props) {
+export function AnswerGrid({ question, onChange, readOnly = false }: Props) {
   const [displayMode, setDisplayMode] = useState<DisplayMode>('table');
   
   const anwserItem = question.anwserItem[0];
@@ -36,6 +38,7 @@ export function AnswerGrid({ question, onChange }: Props) {
   };
 
   const emitChange = (rowId: number, colId: number, val: unknown) => {
+    if (readOnly) return;
     onChange(question, { cellId: `${rowId}_${colId}`, cellValue: val });
   };
 
@@ -46,7 +49,9 @@ export function AnswerGrid({ question, onChange }: Props) {
         return (
           <TouchableOpacity
             style={styles.radioOuter}
-            onPress={() => emitChange(rowId, colId, true)}
+            onPress={() => !readOnly && emitChange(rowId, colId, true)}
+            disabled={readOnly}
+            activeOpacity={readOnly ? 1 : 0.7}
           >
             <View style={[styles.radioInner, val === true && styles.radioSelected]} />
           </TouchableOpacity>
@@ -55,7 +60,9 @@ export function AnswerGrid({ question, onChange }: Props) {
         return (
           <TouchableOpacity
             style={[styles.checkbox, val === true && styles.checkboxChecked]}
-            onPress={() => emitChange(rowId, colId, val !== true)}
+            onPress={() => !readOnly && emitChange(rowId, colId, val !== true)}
+            disabled={readOnly}
+            activeOpacity={readOnly ? 1 : 0.7}
           >
             {val === true && <Text style={styles.checkmark}>✓</Text>}
           </TouchableOpacity>
@@ -63,32 +70,35 @@ export function AnswerGrid({ question, onChange }: Props) {
       case 103: // Text
         return (
           <TextInput
-            style={styles.textInput}
+            style={[styles.textInput, readOnly && styles.inputReadOnly]}
             value={String(val ?? '')}
-            onChangeText={(t) => emitChange(rowId, colId, t)}
-            placeholder="Nhập"
+            onChangeText={(t) => !readOnly && emitChange(rowId, colId, t)}
+            placeholder={readOnly ? '' : 'Nhập'}
             placeholderTextColor="#9AA0A6"
+            editable={!readOnly}
           />
         );
       case 104: // Number
         return (
           <TextInput
-            style={styles.textInput}
+            style={[styles.textInput, readOnly && styles.inputReadOnly]}
             value={String(val ?? '')}
-            onChangeText={(t) => emitChange(rowId, colId, t.replace(/,/g, ''))}
-            placeholder="0"
+            onChangeText={(t) => !readOnly && emitChange(rowId, colId, t.replace(/,/g, ''))}
+            placeholder={readOnly ? '' : '0'}
             placeholderTextColor="#9AA0A6"
             keyboardType="numeric"
+            editable={!readOnly}
           />
         );
       case 105: // Date - simplified
         return (
           <TextInput
-            style={styles.textInput}
+            style={[styles.textInput, readOnly && styles.inputReadOnly]}
             value={String(val ?? '')}
-            onChangeText={(t) => emitChange(rowId, colId, t)}
-            placeholder="YYYY-MM-DD"
+            onChangeText={(t) => !readOnly && emitChange(rowId, colId, t)}
+            placeholder={readOnly ? '' : 'YYYY-MM-DD'}
             placeholderTextColor="#9AA0A6"
+            editable={!readOnly}
           />
         );
       default:
@@ -366,5 +376,9 @@ const styles = StyleSheet.create({
     fontSize: 13, 
     minWidth: 84,
     width: '100%',
+  },
+  inputReadOnly: {
+    backgroundColor: '#F8F9FA',
+    color: '#3C4043',
   },
 });

@@ -34,6 +34,7 @@ interface Props {
   onPickAudioFromFiles?: (question: Question) => void;
   filesBasePath?: string;
   dvhc2025?: Province2025[];
+  readOnly?: boolean;
   onChange: (question: Question, value: unknown, answerItem?: AnswerItem) => void;
 }
 
@@ -54,6 +55,7 @@ export function AnswerRenderer({
   onPickAudioFromFiles,
   filesBasePath,
   dvhc2025,
+  readOnly = false,
   onChange,
 }: Props) {
   if (question.anwserItem.length === 0) {
@@ -145,6 +147,7 @@ export function AnswerRenderer({
         <AnswerGrid
           question={question}
           onChange={(q, v) => onChange(q, v)}
+          readOnly={readOnly}
         />
       );
     case 11:
