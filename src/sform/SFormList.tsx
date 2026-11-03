@@ -13,6 +13,7 @@ import {
 import moment from 'moment';
 import { apiGetFormList, type SFormApiConfig } from './hooks/useSFormApi';
 import type { FormListItem } from './types/sform.types';
+import { getBannerImageUrl } from './utils/bannerUtils';
 
 /**
  * SFormList - Danh sách các form khảo sát
@@ -183,25 +184,15 @@ export const SFormList = forwardRef<SFormListRef, SFormListProps>(({
       >
         {/* Banner Image */}
         {(() => {
-          console.log('[SFormList] item.banner:', item.banner);
-          if (!item.banner) return null;
-          try {
-            const config = JSON.parse(item.banner);
-            console.log('[SFormList] parsed config:', config);
-            const imageUrl = config?.imageURL;
-            console.log('[SFormList] extracted imageURL:', imageUrl);
-            if (!imageUrl) return null;
-            return (
-              <Image
-                source={{ uri: imageUrl }}
-                style={styles.bannerImage}
-                resizeMode="cover"
-              />
-            );
-          } catch (e) {
-            console.error('[SFormList] JSON parse error:', e);
-            return null;
-          }
+          const imageUrl = getBannerImageUrl(item.banner);
+          if (!imageUrl) return null;
+          return (
+            <Image
+              source={{ uri: imageUrl }}
+              style={styles.bannerImage}
+              resizeMode="cover"
+            />
+          );
         })()}
         
         <View style={styles.formItemContent}>

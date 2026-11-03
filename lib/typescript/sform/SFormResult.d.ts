@@ -37,7 +37,15 @@ export interface SFormResultProps {
     displayMode?: 'all' | 'step';
     /** Callback để lấy token mới nhất trước khi submit (tránh token hết hạn) */
     onGetLatestToken?: () => string | Promise<string>;
+    /**
+     * Khoá form (ưu tiên giá trị từ API `locked`/`Locked`).
+     * Nếu > 0 → không cho làm: ẩn nút Gửi, nút "Bắt đầu khảo sát" đổi thành "Xem lại".
+     * Có thể truyền từ item của SFormList (item.locked).
+     */
+    locked?: number | boolean | null;
+    /** Banner dự phòng (vd: item.banner từ SFormList) nếu API chi tiết không trả banner */
+    fallbackBanner?: string | null;
     style?: ViewStyle;
 }
-export declare function SFormResult({ formId, apiConfig, formKey, shopId, onSubmitSuccess, onSubmitError, mode, dataInput, onCameraCapture, onPickImageFromGallery, onCaptureImageFromCamera, onRecordAudio, onPickAudioFromFiles, filesBasePath, dvhc2025, displayMode, onGetLatestToken, style, }: SFormResultProps): React.JSX.Element;
+export declare function SFormResult({ formId, apiConfig, formKey, shopId, onSubmitSuccess, onSubmitError, mode, dataInput, onCameraCapture, onPickImageFromGallery, onCaptureImageFromCamera, onRecordAudio, onPickAudioFromFiles, filesBasePath, dvhc2025, displayMode, onGetLatestToken, locked, fallbackBanner, style, }: SFormResultProps): React.JSX.Element;
 //# sourceMappingURL=SFormResult.d.ts.map

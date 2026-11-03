@@ -76,6 +76,14 @@ export interface SFormResultProps {
   displayMode?: 'all' | 'step';
   /** Callback để lấy token mới nhất trước khi submit (tránh token hết hạn) */
   onGetLatestToken?: () => string | Promise<string>;
+  /**
+   * Khoá form (ưu tiên giá trị từ API `locked`/`Locked`).
+   * Nếu > 0 → không cho làm: ẩn nút Gửi, nút "Bắt đầu khảo sát" đổi thành "Xem lại".
+   * Có thể truyền từ item của SFormList (item.locked).
+   */
+  locked?: number | boolean | null;
+  /** Banner dự phòng (vd: item.banner từ SFormList) nếu API chi tiết không trả banner */
+  fallbackBanner?: string | null;
   style?: ViewStyle;
 }
 
@@ -101,15 +109,17 @@ export function SFormResult({
   dvhc2025,
   displayMode = 'all',
   onGetLatestToken,
+  locked,
+  fallbackBanner,
   style,
 }: SFormResultProps) {
   const [currentStep, setCurrentStep] = React.useState(0);
   const [showIntro, setShowIntro] = React.useState(mode === 'fill'); // Show intro for fill mode
   const [startTime, setStartTime] = React.useState<Date | null>(null);
-  
+
   // Ưu tiên dùng formKey nếu có, ko thì dùng formId
   const queryKey = formKey || formId;
-  
+
   const {
     state,
     setLoading,
@@ -128,14 +138,31 @@ export function SFormResult({
     setDataTown,
   } = useSFormState();
 
+  // ---- Locked: > 0 → không cho làm, chỉ xem lại ----
+  const isLocked = React.useMemo(() => {
+    const fd = state.formData as (typeof state.formData & Record<string, unknown>) | null;
+    const raw = fd?.locked ?? fd?.Locked ?? locked ?? 0;
+    const num = typeof raw === 'boolean' ? (raw ? 1 : 0) : Number(raw);
+    return !isNaN(num) && num > 0;
+  }, [state.formData, locked]);
+
   // ---- Handlers (handleOnChange) ----
-  const { handleOnChange } = useSFormHandlers({
+  const { handleOnChange: rawHandleOnChange } = useSFormHandlers({
     formData: state.formData,
     checkList: state.checkList,
     onUpdate: updateFormData,
     onSetDistrict: setDataDistrict,
     onSetTown: setDataTown,
   });
+
+  // Chặn mọi thay đổi khi form bị khoá
+  const handleOnChange = useCallback(
+    (...args: Parameters<typeof rawHandleOnChange>) => {
+      if (isLocked) return;
+      rawHandleOnChange(...args);
+    },
+    [isLocked, rawHandleOnChange]
+  );
 
   // ---- Error toast (dùng Alert trên RN) ----
   const showError = useCallback((msg: string) => {
@@ -178,7 +205,7 @@ export function SFormResult({
     apiGetFormById(apiConfig, queryKey, shopId || 0)
       .then((result) => {
         console.log('SFormResult - GetById result:', result);
-        
+
         // Check if API returned error data (id=0 means error)
         if (result.id === 0) {
           showError(result.title || 'Không thể tải form');
@@ -220,7 +247,7 @@ export function SFormResult({
         showError(errorMsg);
         setLoading(false);
       });
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [queryKey]);
 
   // ============================================================
@@ -406,6 +433,10 @@ export function SFormResult({
   // ============================================================
   const handleSubmit = useCallback(async () => {
     if (!state.formData) return;
+    if (isLocked) {
+      Alert.alert('Thông báo', 'Khảo sát đã bị khoá, không thể gửi.');
+      return;
+    }
 
     const { isValid, payload } = validate();
     if (!isValid || !payload) return;
@@ -444,6 +475,7 @@ export function SFormResult({
     }
   }, [
     apiConfig,
+    isLocked,
     onGetLatestToken,
     onSubmitSuccess,
     queryKey,
@@ -460,9 +492,9 @@ export function SFormResult({
   // ============================================================
   const { visibleQuestions, questionsToDisplay, isStepMode, totalSteps, isFirstStep, isLastStep } = React.useMemo(() => {
     let questions: Question[] = [];
-    try { 
+    try {
       if (state.formData?.formData) {
-        questions = JSON.parse(state.formData.formData); 
+        questions = JSON.parse(state.formData.formData);
       }
     } catch { /* ignore */ }
 
@@ -502,18 +534,19 @@ export function SFormResult({
   // Validate current question before allowing next
   const canGoNext = React.useMemo(() => {
     if (!isStepMode) return true;
+    if (isLocked) return true; // Xem lại: cho chuyển câu tự do
     const currentQ = visibleQuestions[currentStep];
     if (!currentQ || !currentQ.required) return true;
 
     const ansType = currentQ.anwserItem[0]?.anwserType;
-    
+
     // Check based on answer type
     switch (ansType) {
       case 1: // Text
       case 2: // Textarea
       case 12: // Dropdown
         return !!currentQ.anwserItem[0]?.anwserValue;
-      
+
       case 13: // MultiSelect
         try {
           const multiValue = currentQ.anwserItem[0]?.anwserValue;
@@ -523,27 +556,27 @@ export function SFormResult({
         } catch {
           return false;
         }
-      
+
       case 3: // Number
         const numValue = currentQ.anwserItem[0]?.anwserValue;
         return numValue !== null && numValue !== undefined && numValue !== '';
-      
+
       case 4: // Checkbox
       case 5: // Radio
         const hasChecked = currentQ.anwserItem.some((a) => String(a.anwserValue) === 'true');
         if (!hasChecked) return false;
-        
+
         // If "Other" option (id=99) is selected, must have ortherValue
         const otherAnswer = currentQ.anwserItem.find((a) => a.id === 99 && String(a.anwserValue) === 'true');
         if (otherAnswer) {
           return !!otherAnswer.ortherValue && otherAnswer.ortherValue.trim() !== '';
         }
-        
+
         return true;
-      
+
       case 6: // Date
         return !!currentQ.anwserItem[0]?.anwserValue;
-      
+
       case 7: // Image upload
         try {
           const uploadedStr = currentQ.anwserItem[0]?.anwserValue;
@@ -553,12 +586,12 @@ export function SFormResult({
         } catch {
           return false;
         }
-      
+
       case 8: // Camera
         // Check both uploaded images and pending camera images
         const cameraImgs = state.imageQuestion.filter((img) => img.questionId === currentQ.questionId);
         if (cameraImgs.length > 0) return true;
-        
+
         try {
           const uploadedStr = currentQ.anwserItem[0]?.anwserValue;
           if (!uploadedStr) return false;
@@ -567,7 +600,7 @@ export function SFormResult({
         } catch {
           return false;
         }
-      
+
       case 10: // Grid
         try {
           const grid = JSON.parse(currentQ.anwserItem[0]?.anwserValue || '[]');
@@ -577,7 +610,7 @@ export function SFormResult({
         } catch {
           return false;
         }
-      
+
       case 16: // Audio
         try {
           const audioStr = currentQ.anwserItem[0]?.anwserValue;
@@ -587,11 +620,11 @@ export function SFormResult({
         } catch {
           return false;
         }
-      
+
       default:
         return true;
     }
-  }, [isStepMode, currentStep, visibleQuestions, state.imageQuestion]);
+  }, [isStepMode, isLocked, currentStep, visibleQuestions, state.imageQuestion]);
 
   const handleNext = React.useCallback(() => {
     if (!isLastStep && canGoNext) {
@@ -642,13 +675,17 @@ export function SFormResult({
         title={state.formData.title}
         subTitle={state.formData.subTitle}
         banner={state.formData.banner}
+        fallbackBanner={fallbackBanner}
+        baseUrl={state.formData.webUrl}
         fromDate={state.formData.fromDate}
         toDate={state.formData.toDate}
         fromTime={state.formData.fromTime}
         toTime={state.formData.toTime}
+        locked={isLocked}
         onStart={() => {
           setShowIntro(false);
-          setStartTime(new Date());
+          // Xem lại thì không cần đếm giờ
+          if (!isLocked) setStartTime(new Date());
         }}
       />
     );
@@ -665,16 +702,27 @@ export function SFormResult({
         keyboardShouldPersistTaps="handled"
       >
         {/* Timer - only show after started and in fill mode */}
-        {startTime && mode === 'fill' && (
+        {startTime && mode === 'fill' && !isLocked && (
           <View style={styles.timerContainer}>
             <FormTimer startTime={startTime} />
+          </View>
+        )}
+
+        {/* Lock notice */}
+        {isLocked && mode === 'fill' && (
+          <View style={styles.lockedBar}>
+            <Text style={styles.lockedBarText}>🔒 Khảo sát đã bị khoá - chỉ xem lại</Text>
           </View>
         )}
 
         {/* Show banner and title only in 'all' mode, not in step mode */}
         {displayMode === 'all' && (
           <>
-            <FormBanner banner={state.formData.banner} />
+            <FormBanner
+              banner={state.formData.banner}
+              fallbackBanner={fallbackBanner}
+              baseUrl={state.formData.webUrl}
+            />
             <FormTitle formData={state.formData} />
           </>
         )}
@@ -715,6 +763,7 @@ export function SFormResult({
               filesBasePath={filesBasePath}
               dvhc2025={dvhc2025}
               baseUrl={state.formData?.webUrl || undefined}
+              readOnly={isLocked}
               onChange={(q, v, ans) => handleOnChange(q, v, ans as AnswerItem | undefined)}
             />
           );
@@ -737,8 +786,9 @@ export function SFormResult({
             isLastStep={isLastStep}
             canGoNext={canGoNext}
             isSubmitting={state.isSubmitting}
+            readOnly={isLocked}
           />
-        ) : (
+        ) : isLocked ? null : (
           <View style={styles.footer}>
             <TouchableOpacity
               style={[styles.submitBtn, state.isSubmitting && styles.submitBtnDisabled]}
@@ -773,6 +823,15 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: 16,
   },
+  lockedBar: {
+    backgroundColor: '#FDECEA',
+    borderLeftWidth: 4,
+    borderLeftColor: '#EA4335',
+    borderRadius: 8,
+    padding: 12,
+    marginBottom: 16,
+  },
+  lockedBarText: { color: '#C5221F', fontWeight: '600', fontSize: 14 },
   center: { flex: 1, alignItems: 'center', justifyContent: 'center', padding: 32 },
   loadingText: { marginTop: 16, fontSize: 16, color: '#5F6368', fontWeight: '500' },
   emptyText: { fontSize: 16, color: '#5F6368' },

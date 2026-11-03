@@ -82,6 +82,8 @@ export interface SFormData {
     inApp: boolean | null;
     publicUrl: string | null;
     webUrl?: string | null;
+    locked?: number | boolean | null;
+    Locked?: number | boolean | null;
 }
 export interface Employee {
     Id: number;
@@ -177,6 +179,8 @@ export interface FormListItem {
     createBy: number | null;
     createDate: string | null;
     done?: number;
+    locked?: number | boolean | null;
+    Locked?: number | boolean | null;
 }
 export interface FormListResponse {
     statusId: number;

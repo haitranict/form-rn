@@ -129,6 +129,8 @@ export interface SFormData {
   inApp: boolean | null;
   publicUrl: string | null;
   webUrl?: string | null;    // Base URL for images and resources
+  locked?: number | boolean | null;  // > 0 = khoá, không cho làm (chỉ xem lại)
+  Locked?: number | boolean | null;  // Phòng trường hợp API trả về PascalCase
 }
 
 export interface Employee {
@@ -241,6 +243,8 @@ export interface FormListItem {
   createBy: number | null;
   createDate: string | null;
   done?: number;             // Số lần đã làm form này (0 = chưa làm, > 0 = đã làm)
+  locked?: number | boolean | null;  // > 0 = khoá, không cho làm
+  Locked?: number | boolean | null;
 }
 
 // Response wrapper

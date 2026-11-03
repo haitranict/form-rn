@@ -1,15 +1,22 @@
 import React from 'react';
 import { View, Text, ScrollView, TouchableOpacity, StyleSheet, Image } from 'react-native';
 import moment from 'moment';
+import { parseBanner } from '../utils/bannerUtils';
 
 interface FormIntroProps {
   title: string;
   subTitle: string;
   banner: string | null;
+  /** Banner dự phòng (vd: banner từ item trong SFormList) nếu banner chính rỗng/lỗi */
+  fallbackBanner?: string | null;
+  /** Base URL để ghép với đường dẫn ảnh tương đối */
+  baseUrl?: string | null;
   fromDate: number | null;
   toDate: number | null;
   fromTime: string | null;
   toTime: string | null;
+  /** Form bị khoá (Locked > 0) → chỉ cho xem lại */
+  locked?: boolean;
   onStart: () => void;
 }
 
@@ -17,29 +24,29 @@ export function FormIntro({
   title,
   subTitle,
   banner,
+  fallbackBanner,
+  baseUrl,
   fromDate,
   toDate,
   fromTime,
   toTime,
+  locked = false,
   onStart,
 }: FormIntroProps) {
-  // Parse banner JSON to get imageURL
-  const getBannerUrl = () => {
-    console.log('[FormIntro] banner raw:', banner);
-    if (!banner) return null;
-    try {
-      const config = JSON.parse(banner);
-      console.log('[FormIntro] parsed config:', config);
-      const url = config?.imageURL || null;
-      console.log('[FormIntro] extracted imageURL:', url);
-      return url;
-    } catch (e) {
-      console.error('[FormIntro] JSON parse error:', e);
-      return null;
-    }
-  };
+  // Parse banner (hỗ trợ JSON, URL trực tiếp, đường dẫn tương đối, base64...)
+  const primary = parseBanner(banner, baseUrl);
+  const fallback = parseBanner(fallbackBanner, baseUrl);
+  const candidates = [primary.url, fallback.url].filter(
+    (u, i, arr): u is string => !!u && arr.indexOf(u) === i
+  );
+  const [urlIndex, setUrlIndex] = React.useState(0);
+  const bannerUrl = candidates[urlIndex] ?? null;
 
-  const bannerUrl = getBannerUrl();
+  React.useEffect(() => {
+    setUrlIndex(0);
+    console.log('[FormIntro] banner raw:', banner, '| fallback:', fallbackBanner, '→ candidates:', candidates);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [banner, fallbackBanner]);
 
   // Format dates
   const formatDate = (date: number | null) => {
@@ -60,12 +67,23 @@ export function FormIntro({
           style={styles.banner}
           resizeMode="cover"
           onError={(error) => {
-            console.error('[FormIntro] Image load error:', error.nativeEvent.error);
+            console.error('[FormIntro] Image load error:', bannerUrl, error.nativeEvent.error);
+            // Thử URL dự phòng tiếp theo nếu có
+            if (urlIndex < candidates.length - 1) setUrlIndex(urlIndex + 1);
           }}
           onLoad={() => {
-            console.log('[FormIntro] Image loaded successfully');
+            console.log('[FormIntro] Image loaded successfully:', bannerUrl);
           }}
         />
+      )}
+
+      {/* Lock notice */}
+      {locked && (
+        <View style={styles.lockedContainer}>
+          <Text style={styles.lockedText}>
+            🔒 Khảo sát đã bị khoá. Bạn chỉ có thể xem lại, không thể chỉnh sửa hoặc gửi.
+          </Text>
+        </View>
       )}
 
       {/* Title */}
@@ -109,8 +127,11 @@ export function FormIntro({
       </View>
 
       {/* Start Button */}
-      <TouchableOpacity style={styles.startButton} onPress={onStart}>
-        <Text style={styles.startButtonText}>Bắt đầu khảo sát</Text>
+      <TouchableOpacity
+        style={[styles.startButton, locked && styles.reviewButton]}
+        onPress={onStart}
+      >
+        <Text style={styles.startButtonText}>{locked ? 'Xem lại' : 'Bắt đầu khảo sát'}</Text>
       </TouchableOpacity>
     </ScrollView>
   );
@@ -127,11 +148,29 @@ const styles = StyleSheet.create({
   banner: {
     width: '100%',
     height: 220,
+    backgroundColor: '#E8EAED',
+  },
+  lockedContainer: {
+    margin: 15,
+    marginBottom: 0,
+    padding: 15,
+    backgroundColor: '#FDECEA',
+    borderRadius: 10,
+    borderLeftWidth: 4,
+    borderLeftColor: '#EA4335',
+  },
+  lockedText: {
+    fontSize: 14,
+    color: '#C5221F',
+    fontWeight: '600',
+    lineHeight: 20,
+  },
+  reviewButton: {
+    backgroundColor: '#5F6368',
   },
   titleContainer: {
     padding: 20,
     backgroundColor: '#FFFFFF',
-    marginTop: -20,
     borderTopLeftRadius: 20,
     borderTopRightRadius: 20,
   },

@@ -26,6 +26,8 @@ interface Props {
   filesBasePath?: string;
   dvhc2025?: Province2025[];
   baseUrl?: string;          // Base URL for question images
+  /** Chỉ xem, không cho chỉnh sửa câu trả lời (form bị khoá) */
+  readOnly?: boolean;
   onChange: (question: Question, value: unknown, answerItem?: AnswerItem) => void;
 }
 
@@ -61,6 +63,7 @@ export function QuestionItem({
   filesBasePath,
   dvhc2025,
   baseUrl,
+  readOnly = false,
   onChange,
 }: Props) {
   // Ẩn nếu checkList bảo không hiển thị
@@ -130,7 +133,10 @@ export function QuestionItem({
       )}
 
       {/* Answer */}
-      <View style={styles.answerContainer}>
+      <View
+        style={[styles.answerContainer, readOnly && styles.answerReadOnly]}
+        pointerEvents={readOnly ? 'none' : 'auto'}
+      >
         <AnswerRenderer
           question={question}
           provinces={provinces}
@@ -256,6 +262,9 @@ const styles = StyleSheet.create({
   },
   answerContainer: {
     minHeight: 48,
+  },
+  answerReadOnly: {
+    opacity: 0.7,
   },
   imageGrid: {
     marginTop: 8,

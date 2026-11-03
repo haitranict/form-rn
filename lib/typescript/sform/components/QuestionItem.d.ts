@@ -34,8 +34,10 @@ interface Props {
     filesBasePath?: string;
     dvhc2025?: Province2025[];
     baseUrl?: string;
+    /** Chỉ xem, không cho chỉnh sửa câu trả lời (form bị khoá) */
+    readOnly?: boolean;
     onChange: (question: Question, value: unknown, answerItem?: AnswerItem) => void;
 }
-export declare function QuestionItem({ question, checkItem, provinces, districts, towns, cameraImages, onCapture, onDeleteCameraImage, onDeleteUploadedImage, onUploadImages, onUploadAudio, onPickImageFromGallery, onCaptureImageFromCamera, onRecordAudio, onPickAudioFromFiles, filesBasePath, dvhc2025, baseUrl, onChange, }: Props): React.JSX.Element | null;
+export declare function QuestionItem({ question, checkItem, provinces, districts, towns, cameraImages, onCapture, onDeleteCameraImage, onDeleteUploadedImage, onUploadImages, onUploadAudio, onPickImageFromGallery, onCaptureImageFromCamera, onRecordAudio, onPickAudioFromFiles, filesBasePath, dvhc2025, baseUrl, readOnly, onChange, }: Props): React.JSX.Element | null;
 export {};
 //# sourceMappingURL=QuestionItem.d.ts.map

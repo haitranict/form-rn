@@ -1,36 +1,31 @@
 import React from 'react';
 import { View, Image, StyleSheet } from 'react-native';
-import type { BannerConfig } from '../types/sform.types';
+import { parseBanner } from '../utils/bannerUtils';
 
 interface Props {
   banner: string | null | undefined;
+  /** Banner dự phòng (vd: từ item trong SFormList) */
+  fallbackBanner?: string | null;
+  /** Base URL để ghép với đường dẫn ảnh tương đối */
+  baseUrl?: string | null;
 }
 
-export function FormBanner({ banner }: Props) {
-  console.log('[FormBanner] banner raw:', banner);
-  if (!banner) return null;
+export function FormBanner({ banner, fallbackBanner, baseUrl }: Props) {
+  const primary = parseBanner(banner, baseUrl);
+  const parsed = primary.url ? primary : parseBanner(fallbackBanner, baseUrl);
 
-  let config: BannerConfig | null = null;
-  try {
-    config = JSON.parse(banner) as BannerConfig;
-    console.log('[FormBanner] parsed config:', config);
-  } catch (e) {
-    console.error('[FormBanner] JSON parse error:', e);
+  if (!parsed.url) {
+    console.warn('[FormBanner] No image url. banner raw:', banner);
     return null;
   }
 
-  if (!config?.imageURL) {
-    console.warn('[FormBanner] No imageURL in config');
-    return null;
-  }
-
-  console.log('[FormBanner] Rendering image:', config.imageURL);
   return (
     <View style={styles.container}>
       <Image
-        source={{ uri: config.imageURL }}
-        style={[styles.image, { height: config.imageHeight ?? 200 }]}
+        source={{ uri: parsed.url }}
+        style={[styles.image, { height: parsed.height ?? 200 }]}
         resizeMode="cover"
+        onError={(e) => console.error('[FormBanner] Image load error:', parsed.url, e.nativeEvent.error)}
       />
     </View>
   );

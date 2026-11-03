@@ -11,6 +11,8 @@ interface Props {
   isLastStep: boolean;
   canGoNext: boolean;
   isSubmitting: boolean;
+  /** Chế độ chỉ xem (form bị khoá) → ẩn nút Gửi */
+  readOnly?: boolean;
 }
 
 export function StepNavigation({
@@ -23,7 +25,9 @@ export function StepNavigation({
   isLastStep,
   canGoNext,
   isSubmitting,
+  readOnly = false,
 }: Props) {
+  const hideNextBtn = readOnly && isLastStep;
   return (
     <View style={styles.container}>
       {/* Progress indicator */}
@@ -59,21 +63,23 @@ export function StepNavigation({
           </Text>
         </TouchableOpacity>
 
-        {/* Next/Submit button */}
-        <TouchableOpacity
-          style={[
-            styles.button,
-            styles.nextBtn,
-            (!canGoNext || isSubmitting) && styles.buttonDisabled,
-          ]}
-          onPress={isLastStep ? onSubmit : onNext}
-          disabled={!canGoNext || isSubmitting}
-          activeOpacity={0.7}
-        >
-          <Text style={[styles.buttonText, styles.nextText]}>
-            {isLastStep ? '✓ Gửi' : 'Tiếp →'}
-          </Text>
-        </TouchableOpacity>
+        {/* Next/Submit button (ẩn nút Gửi khi form bị khoá) */}
+        {!hideNextBtn && (
+          <TouchableOpacity
+            style={[
+              styles.button,
+              styles.nextBtn,
+              (!canGoNext || isSubmitting) && styles.buttonDisabled,
+            ]}
+            onPress={isLastStep ? onSubmit : onNext}
+            disabled={!canGoNext || isSubmitting}
+            activeOpacity={0.7}
+          >
+            <Text style={[styles.buttonText, styles.nextText]}>
+              {isLastStep ? '✓ Gửi' : 'Tiếp →'}
+            </Text>
+          </TouchableOpacity>
+        )}
       </View>
     </View>
   );
