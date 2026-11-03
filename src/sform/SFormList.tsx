@@ -170,7 +170,9 @@ export const SFormList = forwardRef<SFormListRef, SFormListProps>(({
 
   const renderFormItem = ({ item }: { item: FormListItem }) => {
     const isExpired = item.toDate ? item.toDate < parseInt(moment().format('YYYYMMDD'), 10) : false;
-    const isCompleted = (item.done ?? 0) > 0; // Đã làm nếu done > 0
+    const isCompleted = (item.done ?? (item as any).Done ?? 0) > 0; // Đã làm nếu done > 0
+    const rawLocked = item.locked ?? item.Locked ?? (item as any).isLocked ?? (item as any).IsLocked ?? 0;
+    const isItemLocked = (typeof rawLocked === 'boolean' ? (rawLocked ? 1 : 0) : Number(rawLocked)) > 0;
 
     return (
       <TouchableOpacity
@@ -200,19 +202,24 @@ export const SFormList = forwardRef<SFormListRef, SFormListProps>(({
             <Text style={styles.formName} numberOfLines={2}>
               {item.title}
             </Text>
-            {isCompleted && (
+            {isItemLocked && (
+              <View style={styles.lockedBadge}>
+                <Text style={styles.lockedText}>🔒 Đã khoá</Text>
+              </View>
+            )}
+            {!isItemLocked && isCompleted && (
               <View style={styles.completedBadge}>
                 <Text style={styles.completedText}>
                   ✓ Đã làm {item.done && item.done > 1 ? `(${item.done})` : ''}
                 </Text>
               </View>
             )}
-            {!isCompleted && isExpired && (
+            {!isItemLocked && !isCompleted && isExpired && (
               <View style={styles.expiredBadge}>
                 <Text style={styles.expiredText}>Hết hạn</Text>
               </View>
             )}
-            {!isCompleted && !isExpired && (
+            {!isItemLocked && !isCompleted && !isExpired && (
               <View style={styles.pendingBadge}>
                 <Text style={styles.pendingText}>Chưa làm</Text>
               </View>
@@ -378,6 +385,17 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     color: '#202124',
     marginRight: 8,
+  },
+  lockedBadge: {
+    backgroundColor: '#FDECEA',
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 12,
+  },
+  lockedText: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: '#C5221F',
   },
   completedBadge: {
     backgroundColor: '#E8F5E9',
