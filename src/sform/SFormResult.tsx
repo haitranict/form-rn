@@ -32,6 +32,7 @@ import { FormSuccess } from './components/FormSuccess';
 import { StepNavigation } from './components/StepNavigation';
 import { FormIntro } from './components/FormIntro';
 import { FormTimer } from './components/FormTimer';
+import { getCachedFormItem } from './utils/formCache';
 import { dvhcvnData } from '../data';
 
 // Địa phương (tỉnh/huyện/xã) - Old structure: Province → District → Town
@@ -120,6 +121,15 @@ export function SFormResult({
   // Ưu tiên dùng formKey nếu có, ko thì dùng formId
   const queryKey = formKey || formId;
 
+  // Lấy metadata được cache từ SFormList (nếu có)
+  const cachedItem =
+    getCachedFormItem(queryKey) ||
+    getCachedFormItem(formKey) ||
+    getCachedFormItem(formId);
+
+  // Banner dự phòng: ưu tiên fallbackBanner từ props, nếu không thì lấy từ cachedItem
+  const effectiveFallbackBanner = fallbackBanner || cachedItem?.banner || null;
+
   const {
     state,
     setLoading,
@@ -141,47 +151,63 @@ export function SFormResult({
   // ---- Locked: > 0 → không cho làm, chỉ xem lại ----
   const isLocked = React.useMemo(() => {
     const fd = state.formData as (typeof state.formData & Record<string, unknown>) | null;
-    const raw =
-      fd?.Locked ??
-      fd?.locked ??
-      fd?.isLocked ??
-      fd?.IsLocked ??
-      (fd as any)?.isLock ??
-      (fd as any)?.IsLock ??
-      (fd as any)?.lock ??
-      (fd as any)?.Lock ??
-      locked ??
-      0;
+    const candidates = [
+      locked, // from props
+      fd?.Locked,
+      fd?.locked,
+      fd?.isLocked,
+      fd?.IsLocked,
+      fd?.isLock,
+      fd?.IsLock,
+      fd?.lock,
+      fd?.Lock,
+      cachedItem?.locked,
+      cachedItem?.Locked,
+      (cachedItem as any)?.isLocked,
+      (cachedItem as any)?.IsLocked,
+      (cachedItem as any)?.lock,
+      (cachedItem as any)?.Lock,
+    ];
 
-    let num = 0;
-    if (typeof raw === 'boolean') {
-      num = raw ? 1 : 0;
-    } else if (typeof raw === 'number') {
-      num = raw;
-    } else if (typeof raw === 'string') {
-      const lower = raw.trim().toLowerCase();
-      if (lower === 'true' || lower === 'yes' || lower === 'locked') {
-        num = 1;
-      } else {
-        const parsed = Number(lower);
-        num = isNaN(parsed) ? 0 : parsed;
+    for (const c of candidates) {
+      if (c === true) return true;
+      if (typeof c === 'number' && c > 0) return true;
+      if (typeof c === 'string') {
+        const lower = c.trim().toLowerCase();
+        if (lower === 'true' || lower === 'yes' || lower === 'locked') return true;
+        const n = Number(lower);
+        if (!isNaN(n) && n > 0) return true;
       }
     }
+    return false;
+  }, [state.formData, locked, cachedItem]);
 
-    const result = num > 0;
-    console.log('[SFormResult] 🔒 Check isLocked:', {
-      result,
-      num,
-      raw,
-      fromFormData: {
-        Locked: fd?.Locked,
-        locked: fd?.locked,
-        isLocked: (fd as any)?.isLocked,
-      },
-      fromProps_locked: locked,
-    });
-    return result;
-  }, [state.formData, locked]);
+  // ---- Done: > 0 → đã làm rồi ----
+  const isDone = React.useMemo(() => {
+    const fd = state.formData as (typeof state.formData & Record<string, unknown>) | null;
+    const candidates = [
+      fd?.Done,
+      fd?.done,
+      (fd as any)?.isDone,
+      (fd as any)?.IsDone,
+      cachedItem?.done,
+      (cachedItem as any)?.Done,
+      (cachedItem as any)?.isDone,
+      (cachedItem as any)?.IsDone,
+    ];
+
+    for (const c of candidates) {
+      if (c === true) return true;
+      if (typeof c === 'number' && c > 0) return true;
+      if (typeof c === 'string') {
+        const lower = c.trim().toLowerCase();
+        if (lower === 'true' || lower === 'yes' || lower === 'done') return true;
+        const n = Number(lower);
+        if (!isNaN(n) && n > 0) return true;
+      }
+    }
+    return false;
+  }, [state.formData, cachedItem]);
 
   // ---- Handlers (handleOnChange) ----
   const { handleOnChange: rawHandleOnChange } = useSFormHandlers({
@@ -712,17 +738,18 @@ export function SFormResult({
         title={state.formData.title}
         subTitle={state.formData.subTitle}
         banner={state.formData.banner}
-        fallbackBanner={fallbackBanner}
+        fallbackBanner={effectiveFallbackBanner}
         baseUrl={state.formData.webUrl}
         fromDate={state.formData.fromDate}
         toDate={state.formData.toDate}
         fromTime={state.formData.fromTime}
         toTime={state.formData.toTime}
         locked={isLocked}
+        isDone={isDone}
         onStart={() => {
           setShowIntro(false);
           // Xem lại thì không cần đếm giờ
-          if (!isLocked) setStartTime(new Date());
+          if (!isLocked && !isDone) setStartTime(new Date());
         }}
       />
     );
@@ -757,7 +784,7 @@ export function SFormResult({
           <>
             <FormBanner
               banner={state.formData.banner}
-              fallbackBanner={fallbackBanner}
+              fallbackBanner={effectiveFallbackBanner}
               baseUrl={state.formData.webUrl}
             />
             <FormTitle formData={state.formData} />
@@ -773,6 +800,7 @@ export function SFormResult({
           onSelectEmployee={handleSelectEmployee}
           onSelectShop={setSelectedShop}
           hasPropShopId={typeof shopId === 'number' && shopId > 0}
+          readOnly={isLocked}
         />
 
         {questionsToDisplay.map((question) => {

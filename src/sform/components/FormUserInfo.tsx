@@ -14,6 +14,8 @@ interface Props {
   onSelectEmployee: (emp: Employee) => void;
   onSelectShop: (shop: Shop) => void;
   hasPropShopId?: boolean;
+  /** Chỉ xem (form bị khoá) → không cho đổi NV / CH */
+  readOnly?: boolean;
 }
 
 export function FormUserInfo({
@@ -25,6 +27,7 @@ export function FormUserInfo({
   onSelectEmployee,
   onSelectShop,
   hasPropShopId = false,
+  readOnly = false,
 }: Props) {
   const [showEmp, setShowEmp] = useState(false);
   const [showShop, setShowShop] = useState(false);
@@ -57,7 +60,7 @@ export function FormUserInfo({
   return (
     <View style={styles.card}>
       <Text style={styles.header}>{header}</Text>
-      <View style={styles.row}>
+      <View style={styles.row} pointerEvents={readOnly ? 'none' : 'auto'}>
         {showEmployees && (
           <TouchableOpacity
             style={[styles.btn, styles.btnEmployee]}

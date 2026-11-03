@@ -137,16 +137,80 @@ export async function apiGetFormById(
     formObj = { ...body };
   }
 
-  // Giữ lại các trường metadata ở root của body (Locked, locked, Done, done...)
-  // phòng trường hợp backend trả về cùng cấp với data hoặc statusId
-  const metaKeys = [
-    'Locked', 'locked', 'isLocked', 'IsLocked', 'isLock', 'IsLock',
-    'Done', 'done', 'lock', 'Lock',
-  ];
-  metaKeys.forEach((key) => {
-    if ((body as any)[key] !== undefined && formObj[key] === undefined) {
-      formObj[key] = (body as any)[key];
+  // Helper parse số dương / boolean true
+  const parsePositive = (val: any): number => {
+    if (val === true) return 1;
+    if (typeof val === 'number' && !isNaN(val)) return val;
+    if (typeof val === 'string') {
+      const lower = val.trim().toLowerCase();
+      if (lower === 'true' || lower === 'yes' || lower === 'locked' || lower === 'done') return 1;
+      const n = Number(lower);
+      return isNaN(n) ? 0 : n;
     }
+    return 0;
+  };
+
+  // Trích xuất Locked từ mọi vị trí khả dĩ: root của body (cùng cấp với data), body.data, formObj
+  const lockedCandidates = [
+    (body as any)?.Locked,
+    (body as any)?.locked,
+    (body as any)?.isLocked,
+    (body as any)?.IsLocked,
+    (body as any)?.lock,
+    (body as any)?.Lock,
+    (body as any)?.data?.Locked,
+    (body as any)?.data?.locked,
+    formObj?.Locked,
+    formObj?.locked,
+    formObj?.isLocked,
+    formObj?.IsLocked,
+    formObj?.lock,
+    formObj?.Lock,
+  ];
+  let finalLocked = 0;
+  for (const cand of lockedCandidates) {
+    const val = parsePositive(cand);
+    if (val > 0) {
+      finalLocked = val;
+      break;
+    }
+  }
+  formObj.Locked = finalLocked;
+  formObj.locked = finalLocked;
+
+  // Trích xuất Done từ mọi vị trí khả dĩ (root của body cùng cấp với data, body.data, formObj)
+  const doneCandidates = [
+    (body as any)?.Done,
+    (body as any)?.done,
+    (body as any)?.isDone,
+    (body as any)?.IsDone,
+    (body as any)?.data?.Done,
+    (body as any)?.data?.done,
+    formObj?.Done,
+    formObj?.done,
+    formObj?.isDone,
+    formObj?.IsDone,
+  ];
+  let finalDone = 0;
+  for (const cand of doneCandidates) {
+    const val = parsePositive(cand);
+    if (val > 0) {
+      finalDone = val;
+      break;
+    }
+  }
+  formObj.Done = finalDone;
+  formObj.done = finalDone;
+
+  // Giữ lại banner nếu data[0] thiếu banner nhưng body root có
+  if (!formObj.banner) {
+    formObj.banner = (body as any)?.banner || (body as any)?.Banner || (body as any)?.data?.banner || null;
+  }
+
+  console.log('[apiGetFormById] Extracted form metadata:', {
+    finalLocked,
+    finalDone,
+    banner: formObj.banner,
   });
 
   return formObj as SFormData;

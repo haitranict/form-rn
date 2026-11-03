@@ -17,6 +17,8 @@ interface FormIntroProps {
   toTime: string | null;
   /** Form bị khoá (Locked > 0) → chỉ cho xem lại */
   locked?: boolean;
+  /** Form đã hoàn thành (done > 0) → nút hiển thị "Xem lại" */
+  isDone?: boolean;
   onStart: () => void;
 }
 
@@ -31,8 +33,11 @@ export function FormIntro({
   fromTime,
   toTime,
   locked = false,
+  isDone = false,
   onStart,
 }: FormIntroProps) {
+  const isReview = Boolean(locked || isDone);
+
   // Parse banner (hỗ trợ JSON, URL trực tiếp, đường dẫn tương đối, base64...)
   const primary = parseBanner(banner, baseUrl);
   const fallback = parseBanner(fallbackBanner, baseUrl);
@@ -77,14 +82,20 @@ export function FormIntro({
         />
       )}
 
-      {/* Lock notice */}
-      {locked && (
+      {/* Lock or Done notice */}
+      {locked ? (
         <View style={styles.lockedContainer}>
           <Text style={styles.lockedText}>
             🔒 Khảo sát đã bị khoá. Bạn chỉ có thể xem lại, không thể chỉnh sửa hoặc gửi.
           </Text>
         </View>
-      )}
+      ) : isDone ? (
+        <View style={styles.doneContainer}>
+          <Text style={styles.doneText}>
+            ✓ Khảo sát đã hoàn thành. Bạn có thể xem lại nội dung đã thực hiện.
+          </Text>
+        </View>
+      ) : null}
 
       {/* Title */}
       <View style={styles.titleContainer}>
@@ -128,10 +139,11 @@ export function FormIntro({
 
       {/* Start Button */}
       <TouchableOpacity
-        style={[styles.startButton, locked && styles.reviewButton]}
+        style={[styles.startButton, isReview && styles.reviewButton]}
         onPress={onStart}
+        activeOpacity={0.8}
       >
-        <Text style={styles.startButtonText}>{locked ? 'Xem lại' : 'Bắt đầu khảo sát'}</Text>
+        <Text style={styles.startButtonText}>{isReview ? 'Xem lại' : 'Bắt đầu khảo sát'}</Text>
       </TouchableOpacity>
     </ScrollView>
   );
@@ -162,6 +174,21 @@ const styles = StyleSheet.create({
   lockedText: {
     fontSize: 14,
     color: '#C5221F',
+    fontWeight: '600',
+    lineHeight: 20,
+  },
+  doneContainer: {
+    margin: 15,
+    marginBottom: 0,
+    padding: 15,
+    backgroundColor: '#E8F5E9',
+    borderRadius: 10,
+    borderLeftWidth: 4,
+    borderLeftColor: '#34A853',
+  },
+  doneText: {
+    fontSize: 14,
+    color: '#1E4620',
     fontWeight: '600',
     lineHeight: 20,
   },

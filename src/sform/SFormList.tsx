@@ -14,6 +14,7 @@ import moment from 'moment';
 import { apiGetFormList, type SFormApiConfig } from './hooks/useSFormApi';
 import type { FormListItem } from './types/sform.types';
 import { getBannerImageUrl } from './utils/bannerUtils';
+import { cacheFormItems, setCachedFormItem } from './utils/formCache';
 
 /**
  * SFormList - Danh sách các form khảo sát
@@ -119,8 +120,10 @@ export const SFormList = forwardRef<SFormListRef, SFormListProps>(({
       console.log('SFormList - API Response:', response);
       
       if (response.statusId === 200) {
-        setForms(response.data || []);
-        console.log('SFormList - Loaded forms count:', response.data?.length || 0);
+        const list = response.data || [];
+        cacheFormItems(list);
+        setForms(list);
+        console.log('SFormList - Loaded forms count:', list.length);
       } else {
         const errorMsg = response.messager || 'Không thể tải danh sách form';
         console.log('SFormList - Error:', errorMsg);
@@ -147,6 +150,7 @@ export const SFormList = forwardRef<SFormListRef, SFormListProps>(({
   };
 
   const handleSelectForm = (item: FormListItem) => {
+    setCachedFormItem(item);
     onSelectForm(item.accessKey, shopId, item);
   };
 
@@ -170,9 +174,26 @@ export const SFormList = forwardRef<SFormListRef, SFormListProps>(({
 
   const renderFormItem = ({ item }: { item: FormListItem }) => {
     const isExpired = item.toDate ? item.toDate < parseInt(moment().format('YYYYMMDD'), 10) : false;
-    const isCompleted = (item.done ?? (item as any).Done ?? 0) > 0; // Đã làm nếu done > 0
-    const rawLocked = item.locked ?? item.Locked ?? (item as any).isLocked ?? (item as any).IsLocked ?? 0;
-    const isItemLocked = (typeof rawLocked === 'boolean' ? (rawLocked ? 1 : 0) : Number(rawLocked)) > 0;
+    const doneCount = Number(item.done ?? (item as any).Done ?? 0);
+    const isCompleted = doneCount > 0;
+
+    const rawLocked =
+      item.locked ??
+      item.Locked ??
+      (item as any).isLocked ??
+      (item as any).IsLocked ??
+      (item as any).lock ??
+      (item as any).Lock ??
+      0;
+    let isItemLocked = false;
+    if (typeof rawLocked === 'boolean') {
+      isItemLocked = rawLocked;
+    } else if (typeof rawLocked === 'number') {
+      isItemLocked = rawLocked > 0;
+    } else if (typeof rawLocked === 'string') {
+      const lower = rawLocked.trim().toLowerCase();
+      isItemLocked = lower === 'true' || lower === 'yes' || lower === 'locked' || Number(lower) > 0;
+    }
 
     return (
       <TouchableOpacity
@@ -180,6 +201,7 @@ export const SFormList = forwardRef<SFormListRef, SFormListProps>(({
           styles.formItem,
           isCompleted && styles.formItemCompleted,
           isExpired && styles.formItemExpired,
+          isItemLocked && styles.formItemLocked,
         ]}
         onPress={() => handleSelectForm(item)}
         activeOpacity={0.7}
@@ -198,28 +220,34 @@ export const SFormList = forwardRef<SFormListRef, SFormListProps>(({
         })()}
         
         <View style={styles.formItemContent}>
+          {/* Nhãn Đã khoá hiển thị ở vị trí riêng (không chiếm chỗ số lần làm) */}
+          {isItemLocked && (
+            <View style={styles.lockedTagContainer}>
+              <View style={styles.lockedTag}>
+                <Text style={styles.lockedTagText}>🔒 ĐÃ KHOÁ</Text>
+              </View>
+            </View>
+          )}
+
           <View style={styles.formItemHeader}>
             <Text style={styles.formName} numberOfLines={2}>
               {item.title}
             </Text>
-            {isItemLocked && (
-              <View style={styles.lockedBadge}>
-                <Text style={styles.lockedText}>🔒 Đã khoá</Text>
-              </View>
-            )}
-            {!isItemLocked && isCompleted && (
+
+            {/* Vị trí bên phải vẫn giữ nguyên hiển thị số lần làm */}
+            {isCompleted && (
               <View style={styles.completedBadge}>
                 <Text style={styles.completedText}>
-                  ✓ Đã làm {item.done && item.done > 1 ? `(${item.done})` : ''}
+                  ✓ Đã làm ({doneCount})
                 </Text>
               </View>
             )}
-            {!isItemLocked && !isCompleted && isExpired && (
+            {!isCompleted && isExpired && (
               <View style={styles.expiredBadge}>
                 <Text style={styles.expiredText}>Hết hạn</Text>
               </View>
             )}
-            {!isItemLocked && !isCompleted && !isExpired && (
+            {!isCompleted && !isExpired && (
               <View style={styles.pendingBadge}>
                 <Text style={styles.pendingText}>Chưa làm</Text>
               </View>
@@ -364,6 +392,28 @@ const styles = StyleSheet.create({
   formItemExpired: {
     borderLeftColor: '#EA4335',
     opacity: 0.7,
+  },
+  formItemLocked: {
+    borderLeftColor: '#D32F2F',
+  },
+  lockedTagContainer: {
+    marginBottom: 8,
+    flexDirection: 'row',
+  },
+  lockedTag: {
+    backgroundColor: '#FDECEA',
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: 6,
+    borderWidth: 1,
+    borderColor: '#F5C2C7',
+    alignSelf: 'flex-start',
+  },
+  lockedTagText: {
+    fontSize: 11,
+    fontWeight: '700',
+    color: '#D32F2F',
+    letterSpacing: 0.5,
   },
   bannerImage: {
     width: '100%',

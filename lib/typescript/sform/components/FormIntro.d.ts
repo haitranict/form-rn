@@ -13,8 +13,10 @@ interface FormIntroProps {
     toTime: string | null;
     /** Form bị khoá (Locked > 0) → chỉ cho xem lại */
     locked?: boolean;
+    /** Form đã hoàn thành (done > 0) → nút hiển thị "Xem lại" */
+    isDone?: boolean;
     onStart: () => void;
 }
-export declare function FormIntro({ title, subTitle, banner, fallbackBanner, baseUrl, fromDate, toDate, fromTime, toTime, locked, onStart, }: FormIntroProps): React.JSX.Element;
+export declare function FormIntro({ title, subTitle, banner, fallbackBanner, baseUrl, fromDate, toDate, fromTime, toTime, locked, isDone, onStart, }: FormIntroProps): React.JSX.Element;
 export {};
 //# sourceMappingURL=FormIntro.d.ts.map
