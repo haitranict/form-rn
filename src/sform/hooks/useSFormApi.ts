@@ -5,6 +5,7 @@ import type {
   Shop,
   UploadResult,
 } from '../types/sform.types';
+import { setDefaultBaseUrl } from '../utils/bannerUtils';
 
 // ============================================================
 // SForm API Service
@@ -25,6 +26,9 @@ interface ApiResponse<T> {
 }
 
 function buildHeaders(config: SFormApiConfig): Record<string, string> {
+  if (config?.baseUrl) {
+    setDefaultBaseUrl(config.baseUrl);
+  }
   const headers: Record<string, string> = {
     'Content-Type': 'application/json',
   };

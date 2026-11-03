@@ -4,6 +4,7 @@ import type { Question, CheckListItem } from '../types/sform.types';
 import type { AnswerItem } from '../types/sform.types';
 import { AnswerRenderer } from '../answers/AnswerRenderer';
 import type { Province, District, Town, Province2025 } from '../types/sform.types';
+import { getDefaultBaseUrl } from '../utils/bannerUtils';
 
 interface CameraImage { index: number; questionId: number; imageData: string; }
 
@@ -87,6 +88,17 @@ export function QuestionItem({
   const screenWidth = Dimensions.get('window').width;
   const screenHeight = Dimensions.get('window').height;
 
+  // Ghép URL ảnh: ưu tiên baseUrl truyền vào, nếu không có thì lấy baseUrl của API
+  const buildImageUrl = (rawUrl: string): string => {
+    if (!rawUrl) return '';
+    if (rawUrl.startsWith('http://') || rawUrl.startsWith('https://') || rawUrl.startsWith('data:')) {
+      return rawUrl;
+    }
+    const cleanBase = (baseUrl || getDefaultBaseUrl() || '').trim().replace(/\/+$/, '');
+    if (!cleanBase) return rawUrl;
+    return `${cleanBase}/${rawUrl.replace(/^\/+/, '')}`;
+  };
+
   return (
     <View style={styles.card}>
       {/* Question title */}
@@ -107,9 +119,7 @@ export function QuestionItem({
         <View style={styles.imageGrid}>
           <ScrollView horizontal showsHorizontalScrollIndicator={false}>
             {questionImages.map((img, index) => {
-              const imageUrl = img.imageURL.startsWith('http') 
-                ? img.imageURL 
-                : `${baseUrl || 'https://vnmpg.spiral.com.vn'}/${img.imageURL}`;
+              const imageUrl = buildImageUrl(img.imageURL);
               
               return (
                 <TouchableOpacity 
@@ -179,9 +189,7 @@ export function QuestionItem({
                 contentOffset={{ x: selectedImageIndex * screenWidth, y: 0 }}
               >
                 {questionImages.map((img, index) => {
-                  const imageUrl = img.imageURL.startsWith('http') 
-                    ? img.imageURL 
-                    : `${baseUrl || 'https://vnmpg.spiral.com.vn'}/${img.imageURL}`;
+                  const imageUrl = buildImageUrl(img.imageURL);
                   
                   return (
                     <View key={index} style={{ width: screenWidth, height: screenHeight }}>

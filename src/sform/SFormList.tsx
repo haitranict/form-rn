@@ -13,7 +13,7 @@ import {
 import moment from 'moment';
 import { apiGetFormList, type SFormApiConfig } from './hooks/useSFormApi';
 import type { FormListItem } from './types/sform.types';
-import { getBannerImageUrl } from './utils/bannerUtils';
+import { getBannerImageUrl, setDefaultBaseUrl } from './utils/bannerUtils';
 import { cacheFormItems, setCachedFormItem } from './utils/formCache';
 
 /**
@@ -107,11 +107,17 @@ export const SFormList = forwardRef<SFormListRef, SFormListProps>(({
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
+    if (apiConfig?.baseUrl) {
+      setDefaultBaseUrl(apiConfig.baseUrl);
+    }
     loadForms();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [shopId, refreshTrigger]);
+  }, [shopId, refreshTrigger, apiConfig?.baseUrl]);
 
   const loadForms = async () => {
+    if (apiConfig?.baseUrl) {
+      setDefaultBaseUrl(apiConfig.baseUrl);
+    }
     setLoading(true);
     setError(null);
     try {
@@ -208,7 +214,7 @@ export const SFormList = forwardRef<SFormListRef, SFormListProps>(({
       >
         {/* Banner Image */}
         {(() => {
-          const imageUrl = getBannerImageUrl(item.banner);
+          const imageUrl = getBannerImageUrl(item.banner, apiConfig?.baseUrl);
           if (!imageUrl) return null;
           return (
             <Image

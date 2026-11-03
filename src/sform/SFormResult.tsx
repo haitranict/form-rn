@@ -33,6 +33,7 @@ import { StepNavigation } from './components/StepNavigation';
 import { FormIntro } from './components/FormIntro';
 import { FormTimer } from './components/FormTimer';
 import { getCachedFormItem } from './utils/formCache';
+import { setDefaultBaseUrl, getDefaultBaseUrl } from './utils/bannerUtils';
 import { dvhcvnData } from '../data';
 
 // Địa phương (tỉnh/huyện/xã) - Old structure: Province → District → Town
@@ -121,6 +122,11 @@ export function SFormResult({
   // Ưu tiên dùng formKey nếu có, ko thì dùng formId
   const queryKey = formKey || formId;
 
+  // Đồng bộ apiConfig.baseUrl vào bannerUtils
+  if (apiConfig?.baseUrl) {
+    setDefaultBaseUrl(apiConfig.baseUrl);
+  }
+
   // Lấy metadata được cache từ SFormList (nếu có)
   const cachedItem =
     getCachedFormItem(queryKey) ||
@@ -147,6 +153,13 @@ export function SFormResult({
     setDataDistrict,
     setDataTown,
   } = useSFormState();
+
+  // Base URL: ưu tiên webUrl từ formData -> apiConfig.baseUrl -> getDefaultBaseUrl()
+  const resolvedBaseUrl =
+    (state.formData?.webUrl && state.formData.webUrl.trim()) ||
+    apiConfig?.baseUrl ||
+    getDefaultBaseUrl() ||
+    undefined;
 
   // ---- Locked: > 0 → không cho làm, chỉ xem lại ----
   const isLocked = React.useMemo(() => {
@@ -739,7 +752,7 @@ export function SFormResult({
         subTitle={state.formData.subTitle}
         banner={state.formData.banner}
         fallbackBanner={effectiveFallbackBanner}
-        baseUrl={state.formData.webUrl}
+        baseUrl={resolvedBaseUrl}
         fromDate={state.formData.fromDate}
         toDate={state.formData.toDate}
         fromTime={state.formData.fromTime}
@@ -785,7 +798,7 @@ export function SFormResult({
             <FormBanner
               banner={state.formData.banner}
               fallbackBanner={effectiveFallbackBanner}
-              baseUrl={state.formData.webUrl}
+              baseUrl={resolvedBaseUrl}
             />
             <FormTitle formData={state.formData} />
           </>
@@ -827,7 +840,7 @@ export function SFormResult({
               onPickAudioFromFiles={handlePickAudioFromFiles}
               filesBasePath={filesBasePath}
               dvhc2025={dvhc2025}
-              baseUrl={state.formData?.webUrl || undefined}
+              baseUrl={resolvedBaseUrl}
               readOnly={isLocked}
               onChange={(q, v, ans) => handleOnChange(q, v, ans as AnswerItem | undefined)}
             />

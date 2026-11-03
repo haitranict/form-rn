@@ -5,12 +5,24 @@
 //  - JSON object string: {"imageURL":"https://...","imageHeight":331}
 //  - JSON bị encode 2 lần: "{\"imageURL\":\"...\"}"
 //  - URL trực tiếp: https://.../banner.jpg
-//  - Đường dẫn tương đối: uploaded/20260417/banner.jpg (cần ghép webUrl)
+//  - Đường dẫn tương đối: uploaded/20260417/banner.jpg (ghép cùng baseUrl của API)
 //  - Chỉ có imageData base64
 //  - Key khác hoa/thường: ImageURL, imageUrl, url
 // ============================================================
 
-const DEFAULT_BASE_URL = 'https://vnmpg.spiral.com.vn';
+let defaultApiBaseUrl = '';
+
+/** Thiết lập base URL mặc định (lấy từ apiConfig.baseUrl của ứng dụng) */
+export function setDefaultBaseUrl(url?: string | null) {
+  if (url && typeof url === 'string') {
+    defaultApiBaseUrl = url.trim().replace(/\/+$/, '');
+  }
+}
+
+/** Lấy base URL mặc định đã được cấu hình */
+export function getDefaultBaseUrl(): string {
+  return defaultApiBaseUrl;
+}
 
 export interface ParsedBanner {
   url: string | null;
@@ -29,8 +41,9 @@ function resolveUrl(raw: string, baseUrl?: string | null): string | null {
   if (/^https?:\/\//i.test(url)) return normalizeUploadUrl(url);
   if (url.startsWith('//')) return normalizeUploadUrl(`https:${url}`);
   if (url.startsWith('file://')) return url;
-  // Relative path → ghép với baseUrl
-  const base = (baseUrl || DEFAULT_BASE_URL).replace(/\/+$/, '');
+  // Relative path → ghép với baseUrl truyền vào hoặc defaultApiBaseUrl lấy từ apiConfig
+  const base = (baseUrl || defaultApiBaseUrl || '').trim().replace(/\/+$/, '');
+  if (!base) return normalizeUploadUrl(url);
   return normalizeUploadUrl(`${base}/${url.replace(/^\/+/, '')}`);
 }
 
