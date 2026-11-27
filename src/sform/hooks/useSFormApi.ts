@@ -301,7 +301,7 @@ export async function apiUploadImages(
 
 /**
  * UploadAudio - Upload audio files
- * POST /uploaded/audio (multipart/form-data)
+ * POST /upload/audio (multipart/form-data)
  */
 export async function apiUploadAudio(
   config: SFormApiConfig,
@@ -318,7 +318,7 @@ export async function apiUploadAudio(
       : `Bearer ${config.token}`;
   }
 
-  const url = `${config.baseUrl}uploaded/audio`;
+  const url = `${config.baseUrl}upload/audio`;
   console.log('apiUploadAudio - URL:', url, 'files:', files.length);
 
   const res = await fetch(url, {

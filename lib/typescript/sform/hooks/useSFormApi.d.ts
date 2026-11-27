@@ -34,7 +34,7 @@ export declare function apiUploadImages(config: SFormApiConfig, files: Array<{
 }>): Promise<UploadResult[]>;
 /**
  * UploadAudio - Upload audio files
- * POST /uploaded/audio (multipart/form-data)
+ * POST /upload/audio (multipart/form-data)
  */
 export declare function apiUploadAudio(config: SFormApiConfig, files: Array<{
     uri: string;
