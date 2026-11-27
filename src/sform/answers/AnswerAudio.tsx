@@ -227,7 +227,10 @@ export function AnswerAudio({
 
   const handleRemoveItem = (idxToRemove: number) => {
     const nextUrls = audioUrls.filter((_, idx) => idx !== idxToRemove);
-    onChange(question, nextUrls.length > 0 ? JSON.stringify(nextUrls) : 'clear');
+    onChange(
+      question,
+      nextUrls.length > 0 ? `replace:${JSON.stringify(nextUrls)}` : 'clear'
+    );
   };
 
   return (
