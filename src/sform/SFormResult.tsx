@@ -530,6 +530,72 @@ export function SFormResult({
         };
       }
 
+      // Upload các file audio local (chờ gửi) trước khi gọi apiInsertResult
+      try {
+        const parsedQuestions: Question[] = JSON.parse(payload.spiralData || '[]');
+        let hasAudioUpdated = false;
+
+        for (const q of parsedQuestions) {
+          const ans = q.anwserItem?.[0];
+          if (!ans || ans.anwserType !== 16 || !ans.anwserValue) continue;
+
+          let urls: string[] = [];
+          try {
+            const parsed = JSON.parse(ans.anwserValue);
+            if (Array.isArray(parsed)) urls = parsed;
+          } catch { continue; }
+
+          const nextUrls: string[] = [];
+          for (const uri of urls) {
+            const isLocal =
+              typeof uri === 'string' &&
+              (uri.startsWith('file://') ||
+                uri.startsWith('content://') ||
+                (uri.startsWith('/') && !uri.startsWith('/uploaded')));
+
+            if (!isLocal) {
+              nextUrls.push(uri);
+              continue;
+            }
+
+            const cleanName = uri.split('?')[0].split('/').pop() || `audio_${Date.now()}.m4a`;
+            const ext = cleanName.split('.').pop()?.toLowerCase() || 'm4a';
+            const mimeMap: Record<string, string> = {
+              m4a: 'audio/m4a',
+              mp4: 'audio/mp4',
+              mp3: 'audio/mpeg',
+              wav: 'audio/wav',
+              aac: 'audio/aac',
+            };
+            const uploadRes = await apiUploadAudio(currentApiConfig, [
+              {
+                uri,
+                name: cleanName,
+                type: mimeMap[ext] || 'audio/m4a',
+              },
+            ]);
+            const uploaded = uploadRes?.find((r) => r.message === 'Successful' && r.fileUrl);
+            if (!uploaded?.fileUrl) {
+              throw new Error('Upload file âm thanh thất bại');
+            }
+            nextUrls.push(normalizeUploadUrl(uploaded.fileUrl));
+            hasAudioUpdated = true;
+          }
+
+          if (hasAudioUpdated) {
+            ans.anwserValue = JSON.stringify(nextUrls);
+          }
+        }
+
+        if (hasAudioUpdated) {
+          payload.spiralData = JSON.stringify(parsedQuestions);
+        }
+      } catch (audioErr: any) {
+        console.error('Upload audio before submit error:', audioErr);
+        showError(audioErr?.message || 'Upload file âm thanh thất bại. Vui lòng thử lại.');
+        return;
+      }
+
       const response = await apiInsertResult(currentApiConfig, payload);
       console.log('Submit response:', JSON.stringify(response, null, 2));
 

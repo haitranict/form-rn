@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from 'react';
 import {
-  ActivityIndicator,
   Alert,
   Modal,
   PermissionsAndroid,
@@ -24,7 +23,7 @@ interface RecordBackType {
 interface Props {
   question: Question;
   onChange: (question: Question, value: string) => void;
-  onUpload: (
+  onUpload?: (
     files: Array<{ uri: string; name: string; type: string }>,
     question: Question
   ) => void | Promise<void>;
@@ -32,10 +31,25 @@ interface Props {
   onPickFromFiles?: (question: Question, audioUri?: string) => void;
 }
 
+const isLocalAudioUri = (uri: string): boolean => {
+  if (!uri) return false;
+  return (
+    uri.startsWith('file://') ||
+    uri.startsWith('content://') ||
+    (uri.startsWith('/') && !uri.startsWith('/uploaded'))
+  );
+};
+
+const getAudioDisplayName = (uri: string): string => {
+  if (!uri) return 'audio';
+  const clean = uri.split('?')[0];
+  const parts = clean.split('/');
+  return parts[parts.length - 1] || uri;
+};
+
 export function AnswerAudio({
   question,
   onChange,
-  onUpload,
   onRecord,
   onPickFromFiles,
 }: Props) {
@@ -47,7 +61,6 @@ export function AnswerAudio({
 
   const [recordVisible, setRecordVisible] = useState(false);
   const [isRecording, setIsRecording] = useState(false);
-  const [isUploading, setIsUploading] = useState(false);
   const [recordTime, setRecordTime] = useState('00:00:00');
 
   useEffect(() => {
@@ -150,20 +163,11 @@ export function AnswerAudio({
           ? resultUri
           : `file://${resultUri}`;
 
-      const filePayload = {
-        uri: normalizedUri,
-        name: `audio_${Date.now()}.m4a`,
-        type: 'audio/m4a',
-      };
-
-      setIsUploading(true);
-      try {
-        await onUpload([filePayload], question);
-        if (onRecord) {
-          onRecord(question, normalizedUri);
-        }
-      } finally {
-        setIsUploading(false);
+      // Lưu đường dẫn local vào câu trả lời; khi bấm Gửi form sẽ upload lên server
+      const nextUrls = [...audioUrls, normalizedUri];
+      onChange(question, JSON.stringify(nextUrls));
+      if (onRecord) {
+        onRecord(question, normalizedUri);
       }
     } catch (error: any) {
       Sound.removeRecordBackListener();
@@ -207,20 +211,11 @@ export function AnswerAudio({
         return;
       }
 
-      const filePayload = {
-        uri: file.uri,
-        name: file.name || `audio_${Date.now()}.mp3`,
-        type: file.type || 'audio/mpeg',
-      };
-
-      setIsUploading(true);
-      try {
-        await onUpload([filePayload], question);
-        if (onPickFromFiles) {
-          onPickFromFiles(question, file.uri);
-        }
-      } finally {
-        setIsUploading(false);
+      // Lưu đường dẫn local vào câu trả lời; khi bấm Gửi form sẽ upload lên server
+      const nextUrls = [...audioUrls, file.uri];
+      onChange(question, JSON.stringify(nextUrls));
+      if (onPickFromFiles) {
+        onPickFromFiles(question, file.uri);
       }
     } catch (err: any) {
       if (isCancel(err)) {
@@ -230,44 +225,63 @@ export function AnswerAudio({
     }
   };
 
+  const handleRemoveItem = (idxToRemove: number) => {
+    const nextUrls = audioUrls.filter((_, idx) => idx !== idxToRemove);
+    onChange(question, nextUrls.length > 0 ? JSON.stringify(nextUrls) : 'clear');
+  };
+
   return (
     <View style={styles.container}>
-      {audioUrls.map((url) => (
-        <View key={url} style={styles.audioRow}>
-          <Text style={styles.audioIcon}>🎵</Text>
-          <Text style={styles.audioUrl} numberOfLines={1}>
-            {url}
-          </Text>
-        </View>
-      ))}
+      {audioUrls.map((url, idx) => {
+        const isLocal = isLocalAudioUri(url);
+        return (
+          <View key={`${url}_${idx}`} style={styles.audioRow}>
+            <Text style={styles.audioIcon}>🎵</Text>
+            <Text style={styles.audioUrl} numberOfLines={1}>
+              {getAudioDisplayName(url)}
+            </Text>
+            <View
+              style={[
+                styles.statusBadge,
+                isLocal ? styles.statusPending : styles.statusUploaded,
+              ]}
+            >
+              <Text
+                style={[
+                  styles.statusText,
+                  isLocal ? styles.statusPendingText : styles.statusUploadedText,
+                ]}
+              >
+                {isLocal ? 'Chờ gửi' : 'Đã tải'}
+              </Text>
+            </View>
+            <TouchableOpacity
+              onPress={() => handleRemoveItem(idx)}
+              style={styles.removeItemBtn}
+            >
+              <Text style={styles.removeItemText}>✕</Text>
+            </TouchableOpacity>
+          </View>
+        );
+      })}
       <View style={styles.actions}>
         <TouchableOpacity
-          style={[styles.btn, (isMaxReached || isUploading) && styles.btnDisabled]}
+          style={[styles.btn, isMaxReached && styles.btnDisabled]}
           onPress={handleOpenRecorder}
-          disabled={isMaxReached || isUploading}
+          disabled={isMaxReached}
         >
           <Text style={styles.btnIcon}>🎤</Text>
-          <Text
-            style={[
-              styles.btnText,
-              (isMaxReached || isUploading) && styles.btnTextDisabled,
-            ]}
-          >
-            {isUploading ? 'Đang tải...' : 'Ghi âm'}
+          <Text style={[styles.btnText, isMaxReached && styles.btnTextDisabled]}>
+            Ghi âm
           </Text>
         </TouchableOpacity>
         <TouchableOpacity
-          style={[styles.btn, (isMaxReached || isUploading) && styles.btnDisabled]}
+          style={[styles.btn, isMaxReached && styles.btnDisabled]}
           onPress={handlePickFromFiles}
-          disabled={isMaxReached || isUploading}
+          disabled={isMaxReached}
         >
           <Text style={styles.btnIcon}>📁</Text>
-          <Text
-            style={[
-              styles.btnText,
-              (isMaxReached || isUploading) && styles.btnTextDisabled,
-            ]}
-          >
+          <Text style={[styles.btnText, isMaxReached && styles.btnTextDisabled]}>
             Chọn file
           </Text>
         </TouchableOpacity>
@@ -276,7 +290,7 @@ export function AnswerAudio({
             style={[styles.btn, styles.clearBtn]}
             onPress={() => onChange(question, 'clear')}
           >
-            <Text style={styles.btnText}>Xoá</Text>
+            <Text style={styles.btnText}>Xoá hết</Text>
           </TouchableOpacity>
         )}
       </View>
@@ -316,13 +330,6 @@ export function AnswerAudio({
           </View>
         </View>
       </Modal>
-
-      {isUploading && (
-        <View style={styles.uploadingRow}>
-          <ActivityIndicator size="small" color="#1A73E8" />
-          <Text style={styles.uploadingText}>Đang upload file âm thanh...</Text>
-        </View>
-      )}
     </View>
   );
 }
@@ -335,10 +342,38 @@ const styles = StyleSheet.create({
     padding: 8,
     minHeight: 70,
   },
-  audioRow: { flexDirection: 'row', alignItems: 'center', marginBottom: 4 },
-  audioIcon: { fontSize: 18, marginRight: 8 },
-  audioUrl: { flex: 1, fontSize: 13, color: '#5F6368' },
-  actions: { flexDirection: 'row', marginTop: 8, gap: 8 },
+  audioRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 6,
+    backgroundColor: '#F8FAFC',
+    paddingHorizontal: 8,
+    paddingVertical: 6,
+    borderRadius: 6,
+  },
+  audioIcon: { fontSize: 16, marginRight: 6 },
+  audioUrl: { flex: 1, fontSize: 13, color: '#202124' },
+  statusBadge: {
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: 4,
+    marginLeft: 6,
+  },
+  statusPending: { backgroundColor: '#FEF3C7' },
+  statusUploaded: { backgroundColor: '#DCFCE7' },
+  statusText: { fontSize: 10, fontWeight: '700' },
+  statusPendingText: { color: '#B45309' },
+  statusUploadedText: { color: '#15803D' },
+  removeItemBtn: {
+    marginLeft: 8,
+    paddingHorizontal: 4,
+  },
+  removeItemText: {
+    fontSize: 13,
+    fontWeight: '700',
+    color: '#DC2626',
+  },
+  actions: { flexDirection: 'row', marginTop: 6, gap: 8 },
   btn: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -357,16 +392,6 @@ const styles = StyleSheet.create({
   btnIcon: { fontSize: 16, marginRight: 4 },
   btnText: { fontSize: 14, color: '#202124' },
   btnTextDisabled: { color: '#999999' },
-  uploadingRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginTop: 8,
-  },
-  uploadingText: {
-    marginLeft: 6,
-    fontSize: 12,
-    color: '#1A73E8',
-  },
   modalBackdrop: {
     flex: 1,
     backgroundColor: 'rgba(15, 23, 42, 0.5)',

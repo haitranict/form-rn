@@ -3,7 +3,7 @@ import type { Question } from '../types/sform.types';
 interface Props {
     question: Question;
     onChange: (question: Question, value: string) => void;
-    onUpload: (files: Array<{
+    onUpload?: (files: Array<{
         uri: string;
         name: string;
         type: string;
@@ -11,6 +11,6 @@ interface Props {
     onRecord?: (question: Question, audioUri?: string) => void;
     onPickFromFiles?: (question: Question, audioUri?: string) => void;
 }
-export declare function AnswerAudio({ question, onChange, onUpload, onRecord, onPickFromFiles, }: Props): React.JSX.Element;
+export declare function AnswerAudio({ question, onChange, onRecord, onPickFromFiles, }: Props): React.JSX.Element;
 export {};
 //# sourceMappingURL=AnswerAudio.d.ts.map
