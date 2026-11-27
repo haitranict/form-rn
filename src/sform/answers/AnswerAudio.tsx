@@ -1,6 +1,25 @@
-import React from 'react';
-import { View, TouchableOpacity, Text, StyleSheet, Alert } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import {
+  ActivityIndicator,
+  Alert,
+  Modal,
+  PermissionsAndroid,
+  Platform,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from 'react-native';
+// @ts-ignore - peerDependency provided by host app
+import Sound from 'react-native-nitro-sound';
+// @ts-ignore - peerDependency provided by host app
+import { isCancel, pick, types } from '@react-native-documents/picker';
 import type { Question } from '../types/sform.types';
+
+interface RecordBackType {
+  currentPosition: number;
+  currentMetering?: number;
+}
 
 interface Props {
   question: Question;
@@ -8,70 +27,249 @@ interface Props {
   onUpload: (
     files: Array<{ uri: string; name: string; type: string }>,
     question: Question
-  ) => void;
-  onRecord?: (question: Question) => void;
-  onPickFromFiles?: (question: Question) => void;
+  ) => void | Promise<void>;
+  onRecord?: (question: Question, audioUri?: string) => void;
+  onPickFromFiles?: (question: Question, audioUri?: string) => void;
 }
 
-export function AnswerAudio({ question, onChange, onUpload, onRecord, onPickFromFiles }: Props) {
+export function AnswerAudio({
+  question,
+  onChange,
+  onUpload,
+  onRecord,
+  onPickFromFiles,
+}: Props) {
   const raw = question.anwserItem[0].anwserValue;
   let audioUrls: string[] = [];
   try {
     if (raw) audioUrls = JSON.parse(raw);
   } catch { /* ignore */ }
 
-  // Check max limit
+  const [recordVisible, setRecordVisible] = useState(false);
+  const [isRecording, setIsRecording] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
+  const [recordTime, setRecordTime] = useState('00:00:00');
+
+  useEffect(() => {
+    return () => {
+      Sound.removeRecordBackListener();
+      Sound.stopRecorder().catch(() => {});
+    };
+  }, []);
+
   const max = question.max ? Number(question.max) : 0;
   const isMaxReached = max > 0 && audioUrls.length >= max;
 
-  const handleRecord = () => {
-    if (isMaxReached) {
-      Alert.alert('Giới hạn', `Đã đạt giới hạn tối đa ${max} file audio. Vui lòng xóa file cũ trước khi ghi âm mới.`);
-      return;
+  const requestMicPermission = async (): Promise<boolean> => {
+    if (Platform.OS !== 'android') {
+      return true;
     }
-    if (onRecord) {
-      onRecord(question);
-    } else {
-      Alert.alert('Ghi âm', 'Vui lòng truyền callback onRecord để ghi âm');
+    try {
+      const granted = await PermissionsAndroid.request(
+        PermissionsAndroid.PERMISSIONS.RECORD_AUDIO,
+        {
+          title: 'Quyền ghi âm',
+          message: 'Ứng dụng cần quyền sử dụng micro để ghi âm.',
+          buttonNegative: 'Hủy',
+          buttonPositive: 'Đồng ý',
+        }
+      );
+      return granted === PermissionsAndroid.RESULTS.GRANTED;
+    } catch {
+      return false;
     }
   };
 
-  const handlePickFromFiles = () => {
+  const requestAudioReadPermission = async (): Promise<boolean> => {
+    if (Platform.OS !== 'android') {
+      return true;
+    }
+    try {
+      const perm =
+        Number(Platform.Version) >= 33
+          ? PermissionsAndroid.PERMISSIONS.READ_MEDIA_AUDIO
+          : PermissionsAndroid.PERMISSIONS.READ_EXTERNAL_STORAGE;
+      const granted = await PermissionsAndroid.request(perm, {
+        title: 'Quyền truy cập âm thanh',
+        message: 'Ứng dụng cần quyền đọc tệp âm thanh từ thiết bị.',
+        buttonNegative: 'Hủy',
+        buttonPositive: 'Đồng ý',
+      });
+      return granted === PermissionsAndroid.RESULTS.GRANTED;
+    } catch {
+      return false;
+    }
+  };
+
+  const handleOpenRecorder = async () => {
     if (isMaxReached) {
-      Alert.alert('Giới hạn', `Đã đạt giới hạn tối đa ${max} file audio. Vui lòng xóa file cũ trước khi chọn file mới.`);
+      Alert.alert(
+        'Giới hạn',
+        `Đã đạt giới hạn tối đa ${max} file audio. Vui lòng xóa file cũ trước khi ghi âm mới.`
+      );
       return;
     }
-    if (onPickFromFiles) {
-      onPickFromFiles(question);
-    } else {
-      Alert.alert('Chọn file', 'Vui lòng truyền callback onPickFromFiles để chọn file audio');
+    const hasPerm = await requestMicPermission();
+    if (!hasPerm) {
+      Alert.alert('Thông báo', 'Chưa cấp quyền sử dụng micro để ghi âm.');
+      return;
+    }
+    setRecordTime('00:00:00');
+    setIsRecording(false);
+    setRecordVisible(true);
+  };
+
+  const handleStartRecord = async () => {
+    try {
+      Sound.removeRecordBackListener();
+      Sound.addRecordBackListener((e: RecordBackType) => {
+        setRecordTime(Sound.mmssss(Math.floor(e.currentPosition)));
+      });
+      await Sound.startRecorder();
+      setIsRecording(true);
+    } catch (error: any) {
+      Sound.removeRecordBackListener();
+      Alert.alert('Lỗi ghi âm', error?.message || 'Không thể bắt đầu ghi âm.');
+    }
+  };
+
+  const handleStopAndSave = async () => {
+    try {
+      const resultUri = await Sound.stopRecorder();
+      Sound.removeRecordBackListener();
+      setIsRecording(false);
+      setRecordVisible(false);
+
+      if (!resultUri) {
+        Alert.alert('Lỗi', 'Không lấy được file ghi âm.');
+        return;
+      }
+
+      const normalizedUri =
+        resultUri.startsWith('file://') || resultUri.startsWith('content://')
+          ? resultUri
+          : `file://${resultUri}`;
+
+      const filePayload = {
+        uri: normalizedUri,
+        name: `audio_${Date.now()}.m4a`,
+        type: 'audio/m4a',
+      };
+
+      setIsUploading(true);
+      try {
+        await onUpload([filePayload], question);
+        if (onRecord) {
+          onRecord(question, normalizedUri);
+        }
+      } finally {
+        setIsUploading(false);
+      }
+    } catch (error: any) {
+      Sound.removeRecordBackListener();
+      setIsRecording(false);
+      Alert.alert('Lỗi', error?.message || 'Không thể lưu file ghi âm.');
+    }
+  };
+
+  const handleCloseModal = async () => {
+    if (isRecording) {
+      try {
+        await Sound.stopRecorder();
+      } catch { /* ignore */ }
+      Sound.removeRecordBackListener();
+      setIsRecording(false);
+    }
+    setRecordVisible(false);
+  };
+
+  const handlePickFromFiles = async () => {
+    if (isMaxReached) {
+      Alert.alert(
+        'Giới hạn',
+        `Đã đạt giới hạn tối đa ${max} file audio. Vui lòng xóa file cũ trước khi chọn file mới.`
+      );
+      return;
+    }
+    const hasPerm = await requestAudioReadPermission();
+    if (!hasPerm) {
+      Alert.alert('Thông báo', 'Chưa cấp quyền đọc tệp âm thanh từ thiết bị.');
+      return;
+    }
+
+    try {
+      const result = await pick({
+        type: [types.audio],
+        allowMultiSelection: false,
+      });
+      const file = result?.[0];
+      if (!file?.uri) {
+        return;
+      }
+
+      const filePayload = {
+        uri: file.uri,
+        name: file.name || `audio_${Date.now()}.mp3`,
+        type: file.type || 'audio/mpeg',
+      };
+
+      setIsUploading(true);
+      try {
+        await onUpload([filePayload], question);
+        if (onPickFromFiles) {
+          onPickFromFiles(question, file.uri);
+        }
+      } finally {
+        setIsUploading(false);
+      }
+    } catch (err: any) {
+      if (isCancel(err)) {
+        return;
+      }
+      Alert.alert('Lỗi', err?.message || 'Không thể chọn file âm thanh.');
     }
   };
 
   return (
     <View style={styles.container}>
-      {audioUrls.map((url, idx) => (
+      {audioUrls.map((url) => (
         <View key={url} style={styles.audioRow}>
           <Text style={styles.audioIcon}>🎵</Text>
-          <Text style={styles.audioUrl} numberOfLines={1}>{url}</Text>
+          <Text style={styles.audioUrl} numberOfLines={1}>
+            {url}
+          </Text>
         </View>
       ))}
       <View style={styles.actions}>
-        <TouchableOpacity 
-          style={[styles.btn, isMaxReached && styles.btnDisabled]} 
-          onPress={handleRecord}
-          disabled={isMaxReached}
+        <TouchableOpacity
+          style={[styles.btn, (isMaxReached || isUploading) && styles.btnDisabled]}
+          onPress={handleOpenRecorder}
+          disabled={isMaxReached || isUploading}
         >
           <Text style={styles.btnIcon}>🎤</Text>
-          <Text style={[styles.btnText, isMaxReached && styles.btnTextDisabled]}>Ghi âm</Text>
+          <Text
+            style={[
+              styles.btnText,
+              (isMaxReached || isUploading) && styles.btnTextDisabled,
+            ]}
+          >
+            {isUploading ? 'Đang tải...' : 'Ghi âm'}
+          </Text>
         </TouchableOpacity>
-        <TouchableOpacity 
-          style={[styles.btn, isMaxReached && styles.btnDisabled]} 
+        <TouchableOpacity
+          style={[styles.btn, (isMaxReached || isUploading) && styles.btnDisabled]}
           onPress={handlePickFromFiles}
-          disabled={isMaxReached}
+          disabled={isMaxReached || isUploading}
         >
           <Text style={styles.btnIcon}>📁</Text>
-          <Text style={[styles.btnText, isMaxReached && styles.btnTextDisabled]}>Chọn file</Text>
+          <Text
+            style={[
+              styles.btnText,
+              (isMaxReached || isUploading) && styles.btnTextDisabled,
+            ]}
+          >
+            Chọn file
+          </Text>
         </TouchableOpacity>
         {audioUrls.length > 0 && (
           <TouchableOpacity
@@ -82,20 +280,73 @@ export function AnswerAudio({ question, onChange, onUpload, onRecord, onPickFrom
           </TouchableOpacity>
         )}
       </View>
+
+      <Modal
+        visible={recordVisible}
+        transparent
+        animationType="fade"
+        onRequestClose={handleCloseModal}
+      >
+        <View style={styles.modalBackdrop}>
+          <View style={styles.modalCard}>
+            <Text style={styles.modalTitle}>Ghi âm câu trả lời</Text>
+            <Text style={styles.timerText}>{recordTime}</Text>
+            <Text style={styles.hintText}>
+              {isRecording ? 'Đang ghi âm...' : 'Nhấn Bắt đầu để ghi âm'}
+            </Text>
+            <View style={styles.modalActions}>
+              <TouchableOpacity
+                style={[styles.modalBtn, styles.modalCancelBtn]}
+                onPress={handleCloseModal}
+              >
+                <Text style={styles.modalCancelText}>Đóng</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={[
+                  styles.modalBtn,
+                  isRecording ? styles.modalStopBtn : styles.modalStartBtn,
+                ]}
+                onPress={isRecording ? handleStopAndSave : handleStartRecord}
+              >
+                <Text style={styles.modalActionText}>
+                  {isRecording ? 'Dừng & Lưu' : 'Bắt đầu'}
+                </Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
+
+      {isUploading && (
+        <View style={styles.uploadingRow}>
+          <ActivityIndicator size="small" color="#1A73E8" />
+          <Text style={styles.uploadingText}>Đang upload file âm thanh...</Text>
+        </View>
+      )}
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { borderWidth: 1, borderColor: '#4285F4', borderRadius: 8, padding: 8, minHeight: 70 },
+  container: {
+    borderWidth: 1,
+    borderColor: '#4285F4',
+    borderRadius: 8,
+    padding: 8,
+    minHeight: 70,
+  },
   audioRow: { flexDirection: 'row', alignItems: 'center', marginBottom: 4 },
   audioIcon: { fontSize: 18, marginRight: 8 },
   audioUrl: { flex: 1, fontSize: 13, color: '#5F6368' },
   actions: { flexDirection: 'row', marginTop: 8, gap: 8 },
   btn: {
-    flexDirection: 'row', alignItems: 'center',
-    borderWidth: 1, borderColor: '#4285F4', borderRadius: 6,
-    paddingHorizontal: 12, paddingVertical: 6,
+    flexDirection: 'row',
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: '#4285F4',
+    borderRadius: 6,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
   },
   btnDisabled: {
     borderColor: '#CCCCCC',
@@ -105,7 +356,79 @@ const styles = StyleSheet.create({
   clearBtn: { borderColor: '#EA4335' },
   btnIcon: { fontSize: 16, marginRight: 4 },
   btnText: { fontSize: 14, color: '#202124' },
-  btnTextDisabled: {
-    color: '#999999',
+  btnTextDisabled: { color: '#999999' },
+  uploadingRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 8,
+  },
+  uploadingText: {
+    marginLeft: 6,
+    fontSize: 12,
+    color: '#1A73E8',
+  },
+  modalBackdrop: {
+    flex: 1,
+    backgroundColor: 'rgba(15, 23, 42, 0.5)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: 24,
+  },
+  modalCard: {
+    width: '100%',
+    maxWidth: 320,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 14,
+    padding: 20,
+    alignItems: 'center',
+  },
+  modalTitle: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: '#202124',
+  },
+  timerText: {
+    fontSize: 28,
+    fontWeight: '800',
+    color: '#202124',
+    marginVertical: 14,
+  },
+  hintText: {
+    fontSize: 13,
+    color: '#5F6368',
+    marginBottom: 18,
+  },
+  modalActions: {
+    flexDirection: 'row',
+    width: '100%',
+    gap: 10,
+  },
+  modalBtn: {
+    flex: 1,
+    height: 42,
+    borderRadius: 8,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  modalCancelBtn: {
+    backgroundColor: '#F1F5F9',
+    borderWidth: 1,
+    borderColor: '#DADCE0',
+  },
+  modalCancelText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#3C4043',
+  },
+  modalStartBtn: {
+    backgroundColor: '#1A73E8',
+  },
+  modalStopBtn: {
+    backgroundColor: '#D93025',
+  },
+  modalActionText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#FFFFFF',
   },
 });
